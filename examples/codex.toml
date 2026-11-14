@@ -1,0 +1,5 @@
+# Merge this server entry into the supported Codex configuration.
+# RIGVON_CRM_TOKEN must be available to the actual client process.
+[mcp_servers.rigvon-crm]
+url = "https://crm.rigvon.cn/api/mcp"
+bearer_token_env_var = "RIGVON_CRM_TOKEN"

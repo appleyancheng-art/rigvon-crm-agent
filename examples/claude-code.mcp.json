@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rigvon-crm": {
+      "type": "http",
+      "url": "https://crm.rigvon.cn/api/mcp",
+      "headers": {"Authorization": "Bearer ${RIGVON_CRM_TOKEN}"}
+    }
+  }
+}

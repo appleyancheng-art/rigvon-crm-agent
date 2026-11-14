@@ -1,0 +1,18 @@
+{
+  "name": "rigvon-crm-agent",
+  "version": "1.1.0",
+  "repository": "https://github.com/Appleyancheng-art/rigvon-crm-agent",
+  "setup": "AGENT_SETUP.md",
+  "skill": {"name": "rigvon-crm", "directory": "rigvon-crm", "entrypoint": "rigvon-crm/SKILL.md"},
+  "mcp": {
+    "name": "rigvon-crm",
+    "transport": "streamable-http",
+    "url": "https://crm.rigvon.cn/api/mcp",
+    "authentication": "bearer",
+    "tokenEnvironmentVariable": "RIGVON_CRM_TOKEN",
+    "protocolVersions": ["2025-11-25", "2025-06-18", "2025-03-26"],
+    "verificationTool": "crm_capabilities"
+  },
+  "containsCredentials": false,
+  "requiresClientConfigurationAccess": true
+}

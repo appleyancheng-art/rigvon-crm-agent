@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rigvon-crm": {
+      "type": "http",
+      "url": "https://crm.rigvon.cn/api/mcp",
+      "headers": { "Authorization": "Bearer <在客户端密钥配置中替换，不要提交到仓库>" }
+    }
+  }
+}
