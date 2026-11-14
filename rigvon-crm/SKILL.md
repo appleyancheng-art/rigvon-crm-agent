@@ -5,7 +5,7 @@ description: 通过睿光 CRM MCP 查询和维护客户、报价、方案设计�
 
 # 睿光 CRM 业务操作
 
-首次接入先调用 `crm_capabilities`，确认连接成功和可用操作。需要某项操作时调用 `crm_describe_operation`，以服务器返回的参数及校验规则为准，不猜测工具名、字段或枚举。只调用当前实际开放的工具。
+首次接入先调用 `crm_capabilities`，核对返回的 Agent 名称与用户授权的 CRM 助手一致，确认连接成功和可用操作。工具未加载、认证失败或需要配置 Grok Bot 时先读 [连接说明](references/connection.md)；安全输入框保存密钥不等于 MCP 连接成功。需要某项操作时调用 `crm_describe_operation`，以服务器返回的参数及校验规则为准，不猜测工具名、字段或枚举。只调用当前实际开放的工具。
 
 ## 读取与定位
 

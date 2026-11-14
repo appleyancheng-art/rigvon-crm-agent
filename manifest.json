@@ -1,6 +1,6 @@
 {
   "name": "rigvon-crm-agent",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "repository": "https://github.com/Appleyancheng-art/rigvon-crm-agent",
   "setup": "AGENT_SETUP.md",
   "skill": {"name": "rigvon-crm", "directory": "rigvon-crm", "entrypoint": "rigvon-crm/SKILL.md"},
@@ -14,5 +14,8 @@
     "verificationTool": "crm_capabilities"
   },
   "containsCredentials": false,
-  "requiresClientConfigurationAccess": true
+  "requiresClientConfigurationAccess": true,
+  "requiresUserCredentialSetup": true,
+  "clientGuides": {"grokBot": "rigvon-crm/references/connection.md"},
+  "verification": {"requiresActualClientToolCall": true, "tool": "crm_capabilities", "checkReturnedAgent": true, "skillVerifiedSeparately": true}
 }
