@@ -2,7 +2,7 @@
 
 将 MCP 连接与业务 Skill 一起交给你的 Agent。仓库仅包含公开接入资料，不包含 CRM 源码、客户数据或真实 Token。
 
-在 CRM 的 **系统管理 → AI 支持 → 复制接入指令** 复制说明，发送给支持工具配置的 Agent。由它读取最新版 [AGENT_SETUP.md](AGENT_SETUP.md)，完成客户端检查、Skill 安装和连接配置。首次授权仍可能需要你在连接器设置中填写 Token；这段指令不是保证所有客户端全自动完成的安装命令。
+在 CRM 的 **工作首页上方的「AI 能力」 → 复制接入指令** 复制说明，发送给支持工具配置的 Agent。由它读取最新版 [AGENT_SETUP.md](AGENT_SETUP.md)，完成客户端检查、Skill 安装和连接配置。首次授权仍可能需要你在连接器设置中填写 Token；这段指令不是保证所有客户端全自动完成的安装命令。
 
 **Grok Bot 桌面端已于 2026-11-14 实测接通并调用 crm_capabilities。** 接入路径为“连接应用 → 添加自定义连接器 → 远程 HTTPS”，Token 填在该连接器的 HTTP 标头中。安全输入框单独显示“已保存”不代表认证已经配置，具体步骤见 [Grok Bot 接入与排错](rigvon-crm/references/connection.md)。版本或界面不同需重新核对，不能把其他模型 API 的支持情况当作桌面客户端支持情况。
 

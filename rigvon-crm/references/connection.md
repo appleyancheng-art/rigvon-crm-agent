@@ -2,7 +2,7 @@
 
 MCP 地址：`https://crm.rigvon.cn/api/mcp`。传输：Streamable HTTP。认证：`Authorization: Bearer <CRM Token>`，Bearer 后为一个半角空格。当前不是 OAuth 服务，不填写 OAuth 客户端 ID/Secret。
 
-接入前先确认 Token 能安全绑定到当前连接器的认证 Header，再让用户提供。使用 CRM 中已启用、未过期助手的最新 Token；重置后旧 Token 失效。不能从旧聊天取 Token，不能擅自启用已停用助手。凭据只用于获授权的连接器，不回显，不放入聊天、URL、Skill、共享配置或仓库。Token 生命周期由 CRM 管理员在 AI 支持页管理，业务 Skill 不管理凭据。
+接入前先确认 Token 能安全绑定到当前连接器的认证 Header，再让用户提供。使用 CRM 中已启用、未过期助手的最新 Token；重置后旧 Token 失效。不能从旧聊天取 Token，不能擅自启用已停用助手。凭据只用于获授权的连接器，不回显，不放入聊天、URL、Skill、共享配置或仓库。Token 生命周期由 CRM 管理员在 AI 能力页管理，业务 Skill 不管理凭据。
 
 ## Grok Bot 桌面端实测路径
 
