@@ -79,12 +79,35 @@
 ## 落单与计价边界
 
 1. 先完成空间盘点与拟选设备表，再创建草稿，减少边想边加产生冗余。检查当前可用模板；适用时用 createQuoteFromTemplateAction，然后按盘点结果调整、分组。模板缺停用产品或结构不适用时说明并使用其他受支持流程，不强制套用。
-2. 操作名是 crm_describe_operation / crm_prepare_operation 的 operation 值，不是独立 MCP 工具。参数以服务器描述为准。createQuoteRoomAction 建平级分组；addQuoteItemAction 或适用的批量添加操作写入 productId、roomId、quantity；reorderQuoteRoomsAction / reorderQuoteItemsAction 整理顺序。每次写入遵循主 Skill 的前置版本、requestKey 与审批要求。
+2. 操作名是 crm_describe_operation / crm_prepare_operation 的 operation 值，不是独立 MCP 工具。参数以服务器描述为准。createQuoteRoomAction 的 form.names 支持换行/逗号分隔，一次最多 30 个平级分组；新增设备使用 addQuoteItemAction 或适用的批量添加操作。已有设备分组优先使用下面的专用批量操作。每次写入遵循主 Skill 的前置版本、requestKey 与审批要求。
 3. 产品从实时库选择，核对启用状态、完整型号、颜色、协议、套装构成、单位及供应商后缀。同名不同型号不能随意替换；找不到匹配产品时报告缺项/候选，不编造 ID 或私自新增产品。
 4. 新增使用系统产品价格；模板/已有单据保留其价格快照、折扣和服务费配置。只在用户明确指定时通过已有业务操作调整价格；历史价差可提示，不用众数自动覆盖，不反推成本、不设毛利目标、不为贴满预算涨价或加设备。
 5. 服务费、有效期等沿用公司/模板/已有单据设置。新增行的计费属性按当前业务操作默认与本次明确要求处理；不因名称含“总线”就关闭服务费，也不一律排除所有线材。不另加施工/调试/设计费行，除非本次明确要求并确认与服务费无重复。
 6. 更新明细可能要求完整字段；读取现值并保留未改字段。尤其区分新增 salePrice、更新 listPrice、读取 listPriceSnapshot / salePrice 和成本快照，不能把数据库字段直接当写入参数。
 7. 改版优先使用业务版本流程并保留原单；只改指定字段时不另建多张单。需要删除时可申请审批并等待，不自行批准，也不默认以重建/改名旧单绕开受限操作。状态沿用或新建草稿，未经用户要求不标已接受、已发送或已结算。
+
+## 已有报价批量分组（能力 v1.2.0）
+
+纯分组不要使用 updateQuoteItemAction；它是完整设备编辑接口，可能重置历史单价/折扣。不要删行重建，也不要改产品库 category。
+
+1. 读取 crm_get_record(quotes, quoteId)，保存 version、全部 itemId、现有房间及数量/单价/折扣/服务费/备注等原值。依据本次要求与上述搭配偏好生成分组映射，不把未知设备一律塞进系统模块。用户明确要求整理时直接执行；只有确实无法判断的分类需要澄清。
+2. 用 crm_describe_operation 查询以下操作的实时 schema（参数在顶层 input，**不是 form**）：
+   - **applyQuoteGroupingAction**：整单建组/复用、分配、排序一次完成。`groups` 顺序就是分组顺序，`itemIds` 顺序就是组内顺序。默认 `unassignedPolicy:"error"` 要求覆盖每个现有 itemId，既不能遗漏也不能重复。`createMissingGroups:true` 自动建缺少的组，重用同名组；同名组存在歧义时拒绝。原有空组保留并排在后面，不删除。
+   - **assignQuoteItemsToRoomsAction**：局部批量移入已存在的房间；只改指定条目的 roomId，所有原排序与未指定条目保持原样。roomId 为 null 才表示明确移入未分配。
+3. 整单重排用 error；确实只整理一部分且要创建/排序分组时可用 `keep`：遗漏条目仍留在原房间（原本未分配的继续未分配），相对顺序保留，排在显式排序条目后。不要把 keep 理解为清空原分组。
+4. 以一次最新报价 precondition 准备一个操作，READY 后直接 execute。相同请求重试保持原 requestKey、input、reason、preconditions；超时先查 operation_status，SUCCEEDED 不重复写入。新的整理意图或版本冲突后重做使用新 requestKey，不能永远复用“报价ID+分组”固定键。
+5. SUCCEEDED 后读取返回的 groups/itemCount/unassignedCount/subtotal/saleTotal，再回读报价取得最新 version。核对全部 itemId、数量、单价、历史折扣、服务费、备注保持原值及目标分组顺序。金额用 CRM 返回值，PDF/Excel 沿用系统导出。不将准备成功或超时当作保存完成。
+
+整单操作的 input 示例（ID 为占位，必须换成实时记录）：
+```json
+{"quoteId":"真实报价ID","groups":[{"name":"系统模块","itemIds":["设备行ID1"]},{"name":"智能面板","itemIds":["设备行ID2","设备行ID3"]}],"createMissingGroups":true,"unassignedPolicy":"error"}
+```
+局部移组 input 示例：
+```json
+{"quoteId":"真实报价ID","assignments":[{"itemId":"设备行ID1","roomId":"真实房间ID"}]}
+```
+
+连接验证时仅 describe 这两个操作并核对 schema，不试改业务单据。如果服务器暂未提供它们，刷新能力再查；仍不可用时说明需更新服务端，不退回可能改价的完整编辑接口。已知接口后正常整单整理为读取→准备→执行→回读，不逐条提交。
 
 ## 交付前回读
 

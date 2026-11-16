@@ -1,6 +1,6 @@
 {
   "name": "rigvon-crm-agent",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "repository": "https://github.com/Appleyancheng-art/rigvon-crm-agent",
   "setup": "AGENT_SETUP.md",
   "skill": {
@@ -39,5 +39,5 @@
     "skillVerifiedSeparately": true
   },
   "updatedAt": "2026-11-16",
-  "capabilityVersion": "1.1.0"
+  "capabilityVersion": "1.2.0"
 }

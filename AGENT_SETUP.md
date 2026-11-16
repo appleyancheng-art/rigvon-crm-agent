@@ -70,4 +70,6 @@ codex mcp add rigvon-crm --url https://crm.rigvon.cn/api/mcp --bearer-token-env-
 客户端升级后先核对其本机帮助和官方文档，不猜测配置字段。
 
 
-当前 Skill v1.4.0 / 能力 v1.1.0：确认普通业务可直接执行、删除类仍需审批，以及 crm_export_link 已提供无需附加 Token 的短时下载链接。不要为验证权限而改业务数据；用户随后提出下载任务时直接用已认证连接申请链接并保存文件。
+当前 Skill v1.5.0 / 能力 v1.2.0：确认普通业务可直接执行、删除类仍需审批，以及 crm_export_link 已提供无需附加 Token 的短时下载链接。不要为验证权限而改业务数据；用户随后提出下载任务时直接用已认证连接申请链接并保存文件。
+
+本次新增报价批量分组：读取 references/quoting.md，describe applyQuoteGroupingAction 与 assignQuoteItemsToRoomsAction 验证可用及嵌套数组 schema。只读验证不执行整理；用户随后要求整理时优先专用接口，保持历史报价计价字段。
