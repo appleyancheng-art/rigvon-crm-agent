@@ -60,3 +60,10 @@ createDesign 创建空方案后读取 designs 详情，在 document 基础上修
 ## 文件
 
 quotes、settlements 支持 pdf/excel；contracts、designs 支持 pdf；reimbursements 支持 pdf/excel，传 recordIds（1–40 条），images 按需开启。当前不支持的模块/格式不要构造 URL。客户端下载大文件应等待 HTTP 完成，不要因稍慢反复生成。
+
+
+## 日常业务和下载
+
+读取、新增、修改、批量添加、入库和用户指定的状态流转不额外要求人工审批。READY 后直接执行，保留版本校验和原业务规则。只有删除、清空、作废或完整保存遗漏已有明细时进入确认；PENDING 不可自行批准。
+
+导出用 crm_export_link，随后直接下载其完整 url。短时链接无需额外 Token；请读取 [下载连接说明](connection.md)，不要让 Grok 用户再次提供密钥。

@@ -68,3 +68,6 @@ codex mcp add rigvon-crm --url https://crm.rigvon.cn/api/mcp --bearer-token-env-
 - [Grok Bot 连接应用与自定义连接器](https://docs.x.ai/grok-bot/computer-and-apps)
 
 客户端升级后先核对其本机帮助和官方文档，不猜测配置字段。
+
+
+当前 Skill v1.4.0 / 能力 v1.1.0：确认普通业务可直接执行、删除类仍需审批，以及 crm_export_link 已提供无需附加 Token 的短时下载链接。不要为验证权限而改业务数据；用户随后提出下载任务时直接用已认证连接申请链接并保存文件。

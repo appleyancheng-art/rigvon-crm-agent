@@ -39,3 +39,10 @@ Grok Bot 同一账号的多个 Bot 可共享连接器；这不是逐 Bot 隔离�
 - **工具不可用/0 个工具**：连接未完成，不能宣称 crm_capabilities 验证通过。先修复连接配置，再做只读核验。
 
 完整接入包：https://github.com/Appleyancheng-art/rigvon-crm-agent ，根目录 AGENT_SETUP.md 说明各客户端安装方式。新用户需由 CRM 管理员授予独立访问凭据，分享接入包不等于授权访问。
+
+
+## 下载时不需要读取连接器 Token（能力 v1.1.0 起）
+
+Grok Bot 等客户端常把 MCP 的认证 Header 保存在连接器内部，普通下载工具无法读取它，这是正常的。已接通 MCP 后调用 crm_export_link，服务器会返回完整 HTTPS 下载链接和 expiresAt。直接访问 url，无需 Bearer Header 或 CRM 登录；不要再索要 Token。ticket 仅授权本次指定文件、最长 15 分钟，可用于重试与断点接收；停用、删除或重置助手后失效。过期重新调用 crm_export_link。
+
+旧版返回相对地址并要求 Bearer 时，先刷新 MCP 工具列表/更新 Skill，核对 crm_capabilities 是否为 v1.1.0 或更高。只有在实际客户端必须重新加载工具时才提示重载。不要把“无法看见 Token”当作“不能使用已认证 MCP”。
