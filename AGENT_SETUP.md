@@ -10,7 +10,7 @@
 
 ## 2. 安装 Skill
 
-将整个 rigvon-crm 目录放入客户端支持的 Skill 目录，保留 references/workflows.md 和 references/connection.md。同名已安装且内容相同则跳过；有本地修改先保留备份并合并，不覆盖其他 Skill。
+将整个 rigvon-crm 目录放入客户端支持的 Skill 目录，完整保留 references 目录，包括 workflows.md、connection.md 和 quoting.md。同名已安装且内容相同则跳过；有本地修改先保留备份并合并，不覆盖其他 Skill。
 
 - Codex：按当前版本实际 Skill 搜索路径安装；例如支持 `.agents/skills` 的版本可使用用户级 `~/.agents/skills/rigvon-crm`。旧版本以其已配置的搜索路径为准。
 - Claude Code 本地客户端：用户级 `~/.claude/skills/rigvon-crm`，或用户指定项目的 `.claude/skills/rigvon-crm`。
@@ -55,6 +55,8 @@ codex mcp add rigvon-crm --url https://crm.rigvon.cn/api/mcp --bearer-token-env-
 重新加载客户端需要时再加载。在 **实际使用的客户端** 查看 rigvon-crm 的工具列表，然后调用 crm_capabilities。只读验证，不创建测试客户、报价或收款。不把单独 curl 成功当成客户端安装成功。
 
 原生 HTTP 调试顺序：initialize → notifications/initialized → tools/list → tools/call(crm_capabilities)。Content-Type: application/json，Accept: application/json, text/event-stream；后续传协商后的 MCP-Protocol-Version。协议版本以 manifest 和服务器实际响应为准。
+
+更新后确认报价任务可发现并读取 references/quoting.md；简述“按空间盘点、按系统分组、计价交给 CRM”的变化。这里只读验证，不试建报价。
 
 分别报告：安装来源版本及 commit、Skill 路径及发现状态、实际使用的 MCP 连接器名称、crm_capabilities 返回的 Agent 名称和能力边界、尚需用户操作。返回的 Agent 名称应与用户授权的 CRM 助手一致；不一致时停止后续业务操作并核对连接。配置写入成功但未调用通过时明确标“待验证”。不要输出真实凭据。401 检查凭据状态，403 检查授权角色；客户端只显示 405 时也需区分真实认证失败与方法错误，详见连接说明。不要反复盲试、通过重启代替认证配置或改变服务端权限。
 

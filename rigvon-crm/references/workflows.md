@@ -8,7 +8,7 @@
 | 新产品 / 修改产品与图片 | createProductAction / updateProductAction |
 | 导入产品 | previewProductImportAction → getProductImportBatch → applyProductImportAction |
 | 导入客户 | previewCustomerImportAction → getCustomerImportBatch → applyCustomerImportAction |
-| 新报价 / 复制 | createQuoteFromListAction / duplicateQuoteVersionAction |
+| 新报价 / 模板建单 / 复制 | createQuoteFromListAction / createQuoteFromTemplateAction / duplicateQuoteVersionAction |
 | 房间、设备 | createQuoteRoomAction / addQuoteItemAction / updateQuoteItemAction / replaceQuoteItemAction |
 | 排序 | reorderQuoteRoomsAction / reorderQuoteItemsAction |
 | 新结算 / 完整保存 | createSettlementAction / saveSettlementAction |
@@ -21,6 +21,10 @@
 | 售后 / 送货 | createAfterSaleAction / saveAfterSaleAction / saveDeliveryAction |
 | 库存入库 | receiveInventoryAction / receiveInventoryBatchAction |
 | 业务设置 | updateCompanyProfileAction / updateBudgetRuleAction / saveTemplateEditorAction |
+
+## 报价
+
+配置方法、PDF 盘点、系统分组及保存后的检查见 [报价配置与图纸盘点](quoting.md)。QuoteRoom 是平级分组；空间盘点与报价分组分开处理。已有价格/服务费配置保持不变，金额使用 CRM 计算。
 
 ## 新增报销示例
 

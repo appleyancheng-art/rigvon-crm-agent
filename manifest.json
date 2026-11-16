@@ -1,21 +1,42 @@
 {
   "name": "rigvon-crm-agent",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "repository": "https://github.com/Appleyancheng-art/rigvon-crm-agent",
   "setup": "AGENT_SETUP.md",
-  "skill": {"name": "rigvon-crm", "directory": "rigvon-crm", "entrypoint": "rigvon-crm/SKILL.md"},
+  "skill": {
+    "name": "rigvon-crm",
+    "directory": "rigvon-crm",
+    "entrypoint": "rigvon-crm/SKILL.md",
+    "references": [
+      "references/connection.md",
+      "references/workflows.md",
+      "references/quoting.md"
+    ]
+  },
   "mcp": {
     "name": "rigvon-crm",
     "transport": "streamable-http",
     "url": "https://crm.rigvon.cn/api/mcp",
     "authentication": "bearer",
     "tokenEnvironmentVariable": "RIGVON_CRM_TOKEN",
-    "protocolVersions": ["2025-11-25", "2025-06-18", "2025-03-26"],
+    "protocolVersions": [
+      "2025-11-25",
+      "2025-06-18",
+      "2025-03-26"
+    ],
     "verificationTool": "crm_capabilities"
   },
   "containsCredentials": false,
   "requiresClientConfigurationAccess": true,
   "requiresUserCredentialSetup": true,
-  "clientGuides": {"grokBot": "rigvon-crm/references/connection.md"},
-  "verification": {"requiresActualClientToolCall": true, "tool": "crm_capabilities", "checkReturnedAgent": true, "skillVerifiedSeparately": true}
+  "clientGuides": {
+    "grokBot": "rigvon-crm/references/connection.md"
+  },
+  "verification": {
+    "requiresActualClientToolCall": true,
+    "tool": "crm_capabilities",
+    "checkReturnedAgent": true,
+    "skillVerifiedSeparately": true
+  },
+  "updatedAt": "2026-11-16"
 }
