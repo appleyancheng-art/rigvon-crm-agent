@@ -21,9 +21,9 @@ description: 通过睿光 CRM MCP 查询和维护客户、报价、方案设计�
 
 1. 明确用户指令、目标和修改范围；关键业务数据缺失先补齐，不虚构价格、票据、型号、付款或图纸尺寸。
 2. 修改已有记录先读取详情，完整单据保存必须保留未修改的设备、收款、优惠、备注、顺序及关联。
-3. 调用 `crm_describe_operation` 查看输入。表单字段放在 `input.form`；完整文档放 `form.payload`（模板编辑的 `payload` 位于 input 顶层）。布尔 true 表示勾选；数组作为重复表单字段；附件传 `{name,mime,fileBase64}`，单个最多3MB，总请求最多4MB。不要给远程图片 URL 代替附件。
+3. 调用 `crm_describe_operation` 查看输入。表单字段放在 `input.form`；完整文档放 `form.payload`（模板编辑的 `payload` 位于 input 顶层）。布尔 true 表示勾选；数组作为重复表单字段；产品图片优先传 `form.imageUrl` 公开 HTTP(S) 图片直链，由服务端转存；本地图片传 `form.image:{name,mime,fileBase64}`（兼容 `file`），≤3MB，不能与 URL 同传。其他附件以操作描述为准；总请求最多4MB，客户端自身可能更小。
 4. `crm_prepare_operation`：填写准确的 reason、唯一 requestKey，已有记录传 `preconditions:[{module,id,version}]`。同一意图重试必须使用相同 requestKey 和相同内容。
-5. 返回 READY：调用 `crm_execute_operation`。返回 PENDING：把 approvalUrl 转成 CRM 完整链接交给用户，等待其在 CRM 确认；用 `crm_operation_status` 查询。Agent 不可自行批准，也不可改用另一工具绕过。
+5. 返回 READY：核对 changes、warnings 与用户意图一致后调用 `crm_execute_operation`。返回 PENDING：把 approvalUrl 转成 CRM 完整链接交给用户，等待其在 CRM 确认；用 `crm_operation_status` 查询；APPROVED / nextAction=execute 时继续 execute。方向有误可用 `crm_cancel_operation` 撤回未执行操作。Agent 不可自行批准，也不可改用另一工具绕过。
 6. 仅在 SUCCEEDED 后报告完成，并返回真实单据链接、影响条目和结果。网络断开时先查 operation_status，不换 requestKey 重建。遇到版本冲突重新读取、合并，再准备新的请求。过期或被拒绝的操作不能继续。
 
 ## 业务规则
@@ -53,3 +53,13 @@ MCP 认证由已配置连接器自动携带。允许客户端通过已有安全�
 制作或修改报价、按 PDF 图纸配设备、无图初步报价时，先读 [报价配置与图纸盘点](references/quoting.md)。先按真实楼层/空间盘点控制需求，再按“系统模块、智能面板、传感器、智能窗帘、线材”等报价分组汇总。图纸明确数量、建议配置和待确认项要区分；选型核对协议与配套，不固定套用面板只数、预算比例或毛利目标。新增使用实时产品库与适用模板，成本和金额交给 CRM。保存成功后回读核对实际设备、数量、分组与汇总。整理已有报价时优先 applyQuoteGroupingAction（整单）或 assignQuoteItemsToRoomsAction（局部），详见同一参考文档；不以完整设备编辑接口逐条移组，以免影响历史价格/折扣。
 
 复杂保存与示例见 [业务映射](references/workflows.md)；接入与认证见 [连接说明](references/connection.md)。
+
+## v1.6.0 写入与读取约定
+
+- 支持 PATCH 的 update 操作省略字段保持不变，清空仅按各字段 schema 使用空字符串或允许的 null；不要凭经验省略完整保存中的行。结算改单行优先 `patchSettlementAction`，按持久 ID 合并。
+- 台账直接提交 `form.receipts` 对象数组，更新保留原收款 id；省略 receipts 保持原收款。不要再把实收金额写进备注代替收款。公司、联系人、业务员分别使用 customerCompany、contactPerson、ownerSales。
+- 创建结算可一次传完整 form.payload，返回最新版本、明细 ID 与计算结果。读取/执行的 computedTotals 是服务端金额，不能拿原始配置的 serviceFeeAmount=0 当实际服务费。
+- 报价表头服务费输入用 serviceFeePercent=25 表示25%；旧 serviceFeeRate 同为百分数。读取的 rate 和结算 adjustments.rate 是0~1比例，禁止原值不换算写回。模板按自己的 schema 配置，不能一律套用25%。
+- 执行回执 records 提供最新 version；仅需版本可 crm_get_record(view="version")，不跳过冲突校验。搜索支持 pageSize 的模块依实际schema；统计看 statistics.matched/global，null不是0，列表全库summary不能判断搜索命中。
+- 同一客户端按序 prepare/execute；不并发提交同一单据。原意图重试沿用 key/operationId；内容改变前先查原状态、撤回未执行旧操作，再用新 key；SUCCEEDED 不重建。
+- 失败看 issues[].path、code、requestId。连接器未就绪或 tool_call_replaced 属客户端链路，先确认工具是否实际到达 CRM；只读网络请求最多重试2次，写入网络中断先查状态。详见业务映射。

@@ -11,7 +11,7 @@
 | 新报价 / 模板建单 / 复制 | createQuoteFromListAction / createQuoteFromTemplateAction / duplicateQuoteVersionAction |
 | 房间、设备 | createQuoteRoomAction / addQuoteItemAction / updateQuoteItemAction / replaceQuoteItemAction |
 | 排序 | reorderQuoteRoomsAction / reorderQuoteItemsAction |
-| 新结算 / 完整保存 | createSettlementAction / saveSettlementAction |
+| 新结算 / 完整保存 / 局部改单 | createSettlementAction / saveSettlementAction / patchSettlementAction |
 | 结算确认 / 状态 | confirmSettlementAction / changeSettlementStatusAction |
 | 单笔报销 / 批量 / 进货订单 | createReimbursementAction / createExpenseBatchAction / savePurchaseOrderAction |
 | 新方案 / 保存 / 生成报价 | createDesign / saveDesign / createQuoteFromDesign |
@@ -45,13 +45,13 @@
 ## 修改已有产品
 
 读取 products 模块产品详情取得 version，保留 brand、category、series、model、quoteName、specification、unit、purchasePrice、suggestedSalePrice、defaultDiscount、notes。
-准备 updateProductAction，input 为 `{productId,form:{…}}`，preconditions 为 products 对应 id/version。不传 image 时保持原图；上传字段名以描述为准，不能猜。
+准备 updateProductAction，input 为 `{productId,form:{…}}`，只传需修改字段即可，preconditions 为 products 对应 id/version。不传 image 时保持原图；上传字段名以描述为准，不能猜。
 
 ## 保存结算
 
 get_record 返回业务详情。items 的快照字段需转成 editor payload 字段：nameSnapshot→name、brandSnapshot→brand、categorySnapshot→category；保留 inventoryItemId、quantity、unitPrice、includeInServiceFee、includeInDiscount、pricingMode、fixedTotal。自定义项目保留 rowKey=id、isCustom 和 purchasePrice。pricingGroups 的 id 映射为 clientId，同时对应行使用 pricingGroupClientId。支付和调整项保留顺序与来源。必须查看 saveSettlementAction 返回的 payloadSchema，不能直接把数据库详情原样塞入 form。
 
-完整保存会替换明细；未要求删除的行必须保留。新增自定义设备使用唯一 rowKey，并按用户提供资料填写，不能冒充库存设备。
+完整保存按提交列表同步明细；现有设备 rowKey=item.id、组合 clientId=group.id、调整项/收款 id 传回时保留持久 ID；未要求删除的行必须保留。新增自定义设备使用唯一 rowKey，并按用户提供资料填写，不能冒充库存设备。
 
 ## 方案
 
@@ -67,3 +67,45 @@ quotes、settlements 支持 pdf/excel；contracts、designs 支持 pdf；reimbur
 读取、新增、修改、批量添加、入库和用户指定的状态流转不额外要求人工审批。READY 后直接执行，保留版本校验和原业务规则。只有删除、清空、作废或完整保存遗漏已有明细时进入确认；PENDING 不可自行批准。
 
 导出用 crm_export_link，随后直接下载其完整 url。短时链接无需额外 Token；请读取 [下载连接说明](connection.md)，不要让 Grok 用户再次提供密钥。
+
+## 台账收款、联系人与日期
+
+创建至少提供 orderDate（YYYY-MM-DD）、status（实际选项）、contractAmount；可同时提交 `receipts:[{label:"定金",amount:200,paidAt:"2026-11-22",note:"",sourceRange:"",mergedSource:false}]`。这是格式示例，不能写入真实业务。更新时每个已有收款保留 id，省略 receipts 表示不改，显式空数组表示清空并需审批。日期按北京时间日历日期传入；布尔接受 true/false，兼容 yes/no、Y/N、1/0。不得伪造付款凭证。
+
+`customerCompany` 是公司，`contactPerson` 是客户联系人，`ownerSales`（兼容 customerOwner）才是业务员。不要把联系人填进业务员。公司客户可以没有电话；warnings 会提醒联系方式待补。完工日期用 completionDate，局部修改不需要重传收款。
+
+台账 receipts 是实收来源；结算 `paymentSource=LEDGER` 自动带出台账收款，MANUAL 使用单据 payments。不要把同一笔同时加两次。结算确认可能将台账收款冻结成单据快照，这是既有规则。
+
+## 结算局部修改、审批与内部备注
+
+```json
+{"operation":"patchSettlementAction","input":{"settlementId":"当前单据ID","form":{"payload":{"items":[{"rowKey":"当前明细ID","quantity":3}]}}},"requestKey":"独立意图唯一编号","reason":"按用户指令调整一行数量","preconditions":[{"module":"settlements","id":"当前单据ID","version":"读取返回的64位版本"}]}
+```
+
+以上为结构示例，ID/version不能照抄。patch 省略行保留；新增设备给新 rowKey 与完整必填值，新增组合给新 clientId；现有调整项/payments 按 id 更新，新行不传 id。删除仍用完整保存并审批。数量和单价改变后用回执 computedTotals，不手算回填总额。
+
+`saveSettlementInternalNoteAction` 最小输入 `{settlementId,form:{internalNote:"内部说明"}}`，上限300字，超限拒绝，不是截断；客户可见备注是 `form.payload.notes`，不能混用。`changeSettlementPendingBillingAction` 接受 `{settlementId,form:{pendingBilling:true}}`；只改待开单标记，不等于确认结算，也不扣库、不改收款来源。
+
+prepare 的 changes、approvalReasons 和 stockPreview 描述具体改动与库存预警；确认后 nextAction=execute 才执行。废弃请求使用 crm_cancel_operation，只能撤回自己尚未执行的操作。已成功不能撤回，不用反向写入冒充撤回。
+
+## 价格、库存与多分组
+
+`addQuoteItemAction` 是单件；同一组批量用 addQuoteItemsBatchAction（100行），跨组用 addQuoteItemsToGroupsAction 的 `input:{quoteId,groups:[{roomId,items:[{productId,quantity}]}]}`，最多300行，统一原子提交。整理现有分组仍使用 applyQuoteGroupingAction。
+
+产品库查无物料时查询 inventory；库存 ID 不能冒充 productId。使用 createProductFromInventoryAction（itemId、model、unit，缺失价格必须明确提供）生成报价产品，随后使用返回的产品 ID；此操作不改变库存。同品牌型号已存在会明确拒绝重复建档。
+
+`crm_find_catalog_matches` 按 q、brand、series 查候选，返回型号、单位、规格及当前价格；仅相似不能当可替换。对账先指定原报价 ID/版本作为基线，比较其历史快照；缺型号或单位标为不可比，单价差与总额差分开，禁止自动把 Z1 当 Z3。库存 retailPrice=null 是缺价，不能直接拿进价或其他颜色售价填充。服务费默认偏好沿用适用报价模板（模板 serviceFeeRate 为比例），用户明确后可改模板；不全局改现有单据或推定全店25%。
+
+## 产品图片与类别
+
+新增/更新产品支持 `form.imageUrl` 公开 HTTP(S) JPG/PNG/WebP 图片直链，服务端下载、校验并转存。不接受网页链接、登录态图片、内网地址，最多3MB；下载失败不报成功。不传图片保留原图。替换图片属于修改；removeImage=true 删除图片需审批。本地文件仍可传 image 文件对象，但客户端参数较小时先取得允许公开下载的直链，不要把用户私有图片擅自公开上传。
+
+手动 category 保留用户填写值（例如安装配件、门禁系统），不会套用批量导入的旧分类归一化规则。规格常见错字只提示不擅改型号；发布前核对官方资料与实际产品。
+
+## 统计、传输和能力边界
+
+搜索命中依据 total/items 与 statistics.matched；statistics.global 是可用的全库统计，没有计算的金额为 null。原生 summary 保留兼容，各字段统计范围看 statisticsScope。金额和库存预警均基于查询时数据；扣库时还会重新校验。
+
+`crm_export_link` 的绝对 HTTPS 链接最多15分钟，保持完整 ticket，无需 Token。TLS EOF/短暂连接失败可在原链接有效期内有限重试；过期重新取链接。不要绕过证书验证。客户端 toolName 变空、tool_call_replaced、connector not available 若未到服务器，CRM 无法修复客户端；缩小参数、串行调用并报告实际失败环节。服务器会对超限请求返回413、字段错误给出定位。
+
+多 Bot 共用一条连接就是共用同一个授权身份，不是人员隔离。不同人员用各自账号/助手；不要为排错复制、重置或扩展权限。Numbers 附件先按其正式解析器提取，避免逐包扫描猜值。
