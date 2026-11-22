@@ -10,7 +10,7 @@
 
 ## 2. 安装 Skill
 
-将整个 rigvon-crm 目录放入客户端支持的 Skill 目录，完整保留 references 目录，包括 workflows.md、connection.md 和 quoting.md。同名已安装且内容相同则跳过；有本地修改先保留备份并合并，不覆盖其他 Skill。
+将整个 rigvon-crm 目录放入客户端支持的 Skill 目录，完整保留 references 目录，包括 workflows.md、connection.md、quoting.md 和 receipts.md。同名已安装且内容相同则跳过；有本地修改先保留备份并合并，不覆盖其他 Skill。
 
 - Codex：按当前版本实际 Skill 搜索路径安装；例如支持 `.agents/skills` 的版本可使用用户级 `~/.agents/skills/rigvon-crm`。旧版本以其已配置的搜索路径为准。
 - Claude Code 本地客户端：用户级 `~/.claude/skills/rigvon-crm`，或用户指定项目的 `.claude/skills/rigvon-crm`。
@@ -70,8 +70,12 @@ codex mcp add rigvon-crm --url https://crm.rigvon.cn/api/mcp --bearer-token-env-
 客户端升级后先核对其本机帮助和官方文档，不猜测配置字段。
 
 
-当前 Skill v1.6.0 / 能力 v1.3.0：确认普通业务可直接执行、删除类仍需审批，以及 crm_export_link 已提供无需附加 Token 的短时下载链接。不要为验证权限而改业务数据；用户随后提出下载任务时直接用已认证连接申请链接并保存文件。
+当前 Skill v1.7.0 / 能力 v1.4.0：确认普通业务可直接执行、删除类仍需审批，以及 crm_export_link 已提供无需附加 Token 的短时下载链接。不要为验证权限而改业务数据；用户随后提出下载任务时直接用已认证连接申请链接并保存文件。
 
 本次新增报价批量分组：读取 references/quoting.md，describe applyQuoteGroupingAction 与 assignQuoteItemsToRoomsAction 验证可用及嵌套数组 schema。只读验证不执行整理；用户随后要求整理时优先专用接口，保持历史报价计价字段。
 
 更新后只读 describe 核对 patchSettlementAction 的按ID合并、createHistoricalSaleAction 的 receipts、updateProductAction 的 imageUrl、addQuoteItemsToGroupsAction 的多分组参数；不要用试建真实单据验证。
+
+## v1.7.0 验证
+
+读取 manifest 后确认 Skill v1.7.0；实际调用 crm_capabilities 确认 MCP v1.4.0，含 receipts。只读 describe issueReceiptAction、issueTemporaryReceiptAction、voidReceiptAction、deleteReceiptAction、listReceiptSources，确认 export 支持 receipts 的 PDF/Excel。不为验证试开收据或删除记录。

@@ -1,6 +1,6 @@
 ---
 name: rigvon-crm
-description: 通过睿光 CRM MCP 查询和维护客户、报价、方案设计、产品库存、结算、报销、合同及交付财务数据。用于用户要求分析或操作睿光 CRM 时；不处理程序代码、账号权限、凭据或部署。
+description: 通过睿光 CRM MCP 查询和维护客户、报价、方案设计、产品库存、结算、收据、报销、合同及交付财务数据。用于用户要求分析或操作睿光 CRM 时；不处理程序代码、账号权限、凭据或部署。
 ---
 
 # 睿光 CRM 业务操作
@@ -63,3 +63,7 @@ MCP 认证由已配置连接器自动携带。允许客户端通过已有安全�
 - 执行回执 records 提供最新 version；仅需版本可 crm_get_record(view="version")，不跳过冲突校验。搜索支持 pageSize 的模块依实际schema；统计看 statistics.matched/global，null不是0，列表全库summary不能判断搜索命中。
 - 同一客户端按序 prepare/execute；不并发提交同一单据。原意图重试沿用 key/operationId；内容改变前先查原状态、撤回未执行旧操作，再用新 key；SUCCEEDED 不重建。
 - 失败看 issues[].path、code、requestId。连接器未就绪或 tool_call_replaced 属客户端链路，先确认工具是否实际到达 CRM；只读网络请求最多重试2次，写入网络中断先查状态。详见业务映射。
+
+## 收据管理（v1.7.0）
+
+收据查询、来源选择、关联开具、独立临时开具、作废、删除与导出见 [收据管理](references/receipts.md)。开具不重复记账，删除和作废仍需 CRM 审批。MCP 能力版本应为 v1.4.0 或更高。

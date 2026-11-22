@@ -59,7 +59,7 @@ createDesign 创建空方案后读取 designs 详情，在 document 基础上修
 
 ## 文件
 
-quotes、settlements 支持 pdf/excel；contracts、designs 支持 pdf；reimbursements 支持 pdf/excel，传 recordIds（1–40 条），images 按需开启。当前不支持的模块/格式不要构造 URL。客户端下载大文件应等待 HTTP 完成，不要因稍慢反复生成。
+quotes、settlements、receipts 支持 pdf/excel；contracts、designs 支持 pdf；reimbursements 支持 pdf/excel，传 recordIds（1–40 条），images 按需开启。当前不支持的模块/格式不要构造 URL。客户端下载大文件应等待 HTTP 完成，不要因稍慢反复生成。
 
 
 ## 日常业务和下载
@@ -109,3 +109,7 @@ prepare 的 changes、approvalReasons 和 stockPreview 描述具体改动与库�
 `crm_export_link` 的绝对 HTTPS 链接最多15分钟，保持完整 ticket，无需 Token。TLS EOF/短暂连接失败可在原链接有效期内有限重试；过期重新取链接。不要绕过证书验证。客户端 toolName 变空、tool_call_replaced、connector not available 若未到服务器，CRM 无法修复客户端；缩小参数、串行调用并报告实际失败环节。服务器会对超限请求返回413、字段错误给出定位。
 
 多 Bot 共用一条连接就是共用同一个授权身份，不是人员隔离。不同人员用各自账号/助手；不要为排错复制、重置或扩展权限。Numbers 附件先按其正式解析器提取，避免逐包扫描猜值。
+
+## 收据
+
+使用 receipts 模块与 [收据管理](receipts.md)；先查实收来源，再开具或独立开具。不要将收据操作误当作新增收款。

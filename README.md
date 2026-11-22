@@ -37,8 +37,12 @@
 
 在 CRM「AI 能力」复制更新指令给 Agent，更新完整 Skill，并只读验证 crm_capabilities 与两个分组操作的 schema；旧 Token 继续使用。
 
-## 当前版本：Skill v1.6.0 / MCP v1.3.0（2026-11-22）
+## 历史版本：Skill v1.6.0 / MCP v1.3.0（2026-11-22）
 
 补齐台账收款数组与联系人、字段校验定位、结算一次建单与按ID局部更新、稳定明细ID、执行回执最新版本/计算结果、审批原因与撤回、跨组批量添加、库存转报价产品、图片URL转存和手动分类保留。搜索区分命中/全库统计；保留下载短时链接、现有权限和审批规则。
 
 CRM 同步优化字段级 AI 来源、手机列表、深色显示与系统保存文件入口；标记仅内部显示。复制“更新指令”给 Agent，刷新工具后实际调用 crm_capabilities 验证 v1.3.0，再只读 describe 验证 patchSettlementAction、createHistoricalSaleAction、updateProductAction 等新契约。已有 Token 继续使用，无需重置。
+
+## 当前版本：Skill v1.7.0 / MCP v1.4.0（2026-11-23）
+
+新增独立收据管理模块：查询收据及实际收款来源、关联开具、无需客户或台账的独立开具、作废、删除、PDF/Excel 下载。见 [收据指南](rigvon-crm/references/receipts.md)。开具不重复记账，删除不影响原收款且需 CRM 审批。导出标题统一为“收据”。复用现有连接与 Token，更新完整 Skill 后，只读验证 crm_capabilities 与收据操作 schema。
