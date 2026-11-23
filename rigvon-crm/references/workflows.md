@@ -28,6 +28,10 @@
 
 ## 新增报销示例
 
+单笔新增、修改、批量录入及进货订单共用三个状态，分别为 `未报销`、`已发送`、`已报销`。资料已提交、仍待报销时选 `已发送`。筛选这类明细时调用 `crm_search`，传入 `{"module":"reimbursements","status":"已发送"}`。总览中的待报销笔数和金额包括未报销与已发送两组。
+
+批量标记时，先读取所选报销记录，调用 `batchReimbursementStatusAction`，在 `form.status` 填写目标状态，`form.records` 传入由记录的 `id` 和原始 `updatedAt` 组成的数组。每批最多 40 条。记录发生变更时，重新读取后再处理。
+
 先搜索同日期、金额、用途的记录排除重复，查看 createReimbursementAction 的描述，然后准备：
 
 ```json

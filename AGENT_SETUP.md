@@ -70,12 +70,14 @@ codex mcp add rigvon-crm --url https://crm.rigvon.cn/api/mcp --bearer-token-env-
 客户端升级后先核对其本机帮助和官方文档，不猜测配置字段。
 
 
-当前 Skill v1.7.0 / 能力 v1.4.0：确认普通业务可直接执行、删除类仍需审批，以及 crm_export_link 已提供无需附加 Token 的短时下载链接。不要为验证权限而改业务数据；用户随后提出下载任务时直接用已认证连接申请链接并保存文件。
+按 manifest.json 的 version 核对安装包，按 capabilityVersion 核对 crm_capabilities 返回的版本。确认普通业务可直接执行、删除类仍需审批，以及 crm_export_link 已提供无需附加 Token 的短时下载链接。不要为验证权限而改业务数据；用户随后提出下载任务时直接用已认证连接申请链接并保存文件。
 
 本次新增报价批量分组：读取 references/quoting.md，describe applyQuoteGroupingAction 与 assignQuoteItemsToRoomsAction 验证可用及嵌套数组 schema。只读验证不执行整理；用户随后要求整理时优先专用接口，保持历史报价计价字段。
 
 更新后只读 describe 核对 patchSettlementAction 的按ID合并、createHistoricalSaleAction 的 receipts、updateProductAction 的 imageUrl、addQuoteItemsToGroupsAction 的多分组参数；不要用试建真实单据验证。
 
-## v1.7.0 验证
+## 业务能力验证
 
-读取 manifest 后确认 Skill v1.7.0；实际调用 crm_capabilities 确认 MCP v1.4.0，含 receipts。只读 describe issueReceiptAction、issueTemporaryReceiptAction、voidReceiptAction、deleteReceiptAction、listReceiptSources，确认 export 支持 receipts 的 PDF/Excel。不为验证试开收据或删除记录。
+确认 crm_capabilities 包含 receipts 模块。只读 describe issueReceiptAction、issueTemporaryReceiptAction、voidReceiptAction、deleteReceiptAction、listReceiptSources，确认 export 支持 receipts 的 PDF/Excel。不为验证试开收据或删除记录。
+
+使用 `crm_describe_operation` 查看 `createReimbursementAction`、`updateReimbursementAction` 和 `batchReimbursementStatusAction`，核对状态包含未报销、已发送和已报销。只读检查即可完成验证。
