@@ -108,3 +108,10 @@ MCP 认证由已配置连接器自动携带，不要求模型读取已有明文�
 方案点位 `iconScale` 为可选的 0.25–4 倍图标显示尺寸，缺省 1；线路只调整线宽和光晕，不变更 `path`、计米或报价。完整保存必须保留该字段。网页现支持中键平移、拖动旋转、固定另一端延长线路、双击替换设备及编辑文字；参见 references/workflows.md。
 
 客户定稿、归档恢复、合同类型和附件导出参见 [业务流程](references/workflows.md#客户定稿归档与合同附件skill-1150--mcp-1100)。定稿须按用户明确选择，不能根据版本新旧自行决定。
+
+
+## 报价显示选项（Skill 1.16.0 / MCP 1.11.0）
+
+按用户选择调用 `crm_export_link` 的报价选项：`onlyFinalTotal:true` 仅显示折后总额，PDF/Excel 不含单价、小计、原总价和费用拆分，Excel 无内部核算与隐藏价格。默认 false，不改变报价数据。还可设置 `showUnitPrice`、`showBrand`、`showProductIntroduction`、`showCustomer`、`showCompany`（默认 true）。仅折后总额优先于显示单价，其他展示选项独立生效。
+
+合同通过 `saveContractAction` 的 `form.payload.attachmentQuoteExportOptions` 保存同组布尔选项；省略选项保留已有选择，保存后重建报价附件快照。选择只影响报价附件，不改变合同正文与方案。`crm_export_link(module:"contracts")` 使用已保存的选择，不能用下载 URL 临时改写。客户定稿在客户详情，须按用户明确版本选择。详见 [报价指南](references/quoting.md) 与 [业务流程](references/workflows.md)。

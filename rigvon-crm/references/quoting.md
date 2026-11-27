@@ -125,3 +125,16 @@
 - 示例客厅 2 块、主卧 3 块同款面板，统一系统分组且价格属性相同：报价“智能面板”内合并为 5 块，保留空间分配依据；若要求分楼层或型号不同则分别列行。
 - 示例一窗双层纱布、各一条独立电动开合轨道：暂按两套驱动配置核对；对开布帘两片不自动再翻倍。无尺寸时轨道米数待确认或明确暂估。
 - 模板与历史线材计费不同：保留所选模板/已有单的属性，只提示差异；金额计算交给 CRM，不执行文档里的统一计费覆盖。
+
+
+## 客户导出与仅折后总额（Skill 1.16.0 / MCP 1.11.0）
+
+`crm_export_link` 的报价 PDF 和 Excel 共用显示选项；所有选项均为布尔值且只支持 `module:"quotes"`。默认 `onlyFinalTotal:false`，其余 true。用户要求只给折后总额时：
+
+```json
+{"module":"quotes","id":"<报价ID>","format":"pdf","onlyFinalTotal":true}
+```
+
+Excel 将 `format` 改为 `excel`。保留产品、房间、规格、数量及用户选定的介绍；结构化价格仅保留最终折后金额，含已配置折扣、调整与服务费。不包含单价、明细/房间小计、原总价、折扣率及费用拆分，Excel 不含内部核算表、隐藏价格或价格公式。正常 Excel 可能包含内部核算，应按用途交付。
+
+`showUnitPrice`、`showBrand`、`showProductIntroduction`、`showCustomer`、`showCompany` 可按用户选择传 false；`onlyFinalTotal:true` 优先于 showUnitPrice。自由文本备注不会自动改写，交付前仍需阅读用户录入的条款。下载必须使用返回的完整签名链接，显示选项已绑定凭证，追加参数不能更改。

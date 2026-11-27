@@ -219,3 +219,18 @@ READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务
 `includeAttachments:false` 仅导出竖版合同。`true` 时必须关联客户，并选 `attachmentQuoteId` 和/或 `attachmentDesignId`，来源必须属于该客户。优先采用用户确认的定稿 ID，也可按明确指示选择其他版本。保存成功后固定当时 PDF 快照；源报价/方案之后修改或归档，不会改动已存附件。需要更新附件时重新保存合同。`crm_export_link` 导出一份 PDF，顺序为横版合同、报价、方案，所有部分均横版。导出不包含内部成本和备注；附件保存失败时整单失败，不报告成功。
 
 网页方案操作补充：Option 拖动复制，Option 拖边缘中心缩放；复制/粘贴格式只传递 iconScale，线路不改变长度或数量。可多选粘贴，或应用到本图同款（跳过锁定项）。⌥⌘C/V 沿用 Keynote；Safari 可能优先打开控制台，可用格式按钮或 ⌥⇧C/V。Agent 批量修改尺寸仍需保留完整 document 的其余内容与最新 revision，不更改设备型号、安装面颜色、供货范围或报价数量。
+
+
+## 合同附带报价的显示选项（Skill 1.16.0 / MCP 1.11.0）
+
+客户列表不显示“选择定稿”，可进入客户详情的定稿区域。合同编辑中勾选“附带报价／方案”，选择报价后即可勾选报价的显示选项。
+
+调用 `saveContractAction` 时，在完整 `form.payload` 中增加以下对象；其他合同字段从最新详情保留，照常提供 contracts 的 preconditions：
+
+```json
+{"attachmentQuoteExportOptions":{"onlyFinalTotal":true,"showUnitPrice":true,"showBrand":false,"showProductIntroduction":true,"showCustomer":true,"showCompany":true}}
+```
+
+onlyFinalTotal 缺省 false，其余缺省 true；旧客户端省略对象或部分键时保留已保存选项。onlyFinalTotal 为 true 时抑制单价，设回 false 恢复所选 showUnitPrice。严格使用布尔值；未知键或字符串布尔值会被拒绝。该选择只影响报价附件，合同正文和方案不变。保存成功后回读 `attachmentQuoteExportOptions` 与 attachments，核对快照；下载合并 PDF 使用已存快照，源报价变化不会改动附件。需要更改显示或更新数据时重新保存合同，再申请合同导出链接。
+
+Option 拖拽时保留原点位，副本预览随鼠标移动；松手仅新增一个副本，撤销/取消不会删除原点位。只改变编辑交互，方案保存 schema 不变。
