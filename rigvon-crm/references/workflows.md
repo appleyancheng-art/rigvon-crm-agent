@@ -61,6 +61,13 @@ get_record 返回业务详情。items 的快照字段需转成 editor payload �
 
 createDesign 创建空方案后读取 designs 详情，在 document 基础上修改；保存需要 id、revision、title、customerId、document，并提供 MCP 的 preconditions。服务器拒绝其他项目的底图关联。底图先 uploadDesignAsset，form.file 为附件对象。需要图片视觉分析时读取原始图纸；不要仅靠产品文字编造点位。
 
+- 灯具固定符号：`spot` 圆点、`linearLight` 短条、`wallLight` 三角、`ceilingLight` 方块；灯带 path 是连续发光线，产品关联和数量不变。`mounting` 可选 `ceiling/wall/floor`（顶面/立面/底位），只决定安装面标识，不改变计价。
+- 分类底图示例：`floors[0].pageBackgrounds = [{"pageId":"ceiling","assetId":"<本方案已上传底图ID>","width":2000,"height":1500,"metersPerPixel":null}]`。仅更新目标条目，保留其他分类。未设置继承楼层；`assetId:""` 表示该分类空白；移除条目恢复楼层底图。基础楼层换图不改已有独立底图。
+- 替换/删除独立底图，保留该分类设备的归一化坐标，先按旧图尺寸及比例计算现有 autoLength 数量，再置 autoLength=false、metersPerPixel=null；其他分类不动。恢复继承也先冻结旧长度。分类图按独立宽高和比例计算，重新校准后再启用自动计米。
+- 旋转设备使用 `rotation`（0–360度）；线路先按有效图纸 width/height 转像素坐标，围绕路径包围盒中心旋转角度差，再归一化并同步首节点 x/y。保留数量和长度，不将超界节点强行裁到0或1。
+- 清空设备：移除全部 points 及引用动作，保留底图和 annotations。清空图纸与设备：另将各层 assetId 置空、pageBackgrounds 清空、metersPerPixel=null，并清空 annotations；保留楼层、房间和场景本身。删除、清空或移除图纸/标注走 MCP 审批，不能以保存方式绕过。
+- 网页可对互不重叠的编辑自动合并；MCP 保留 revision 与 preconditions 校验。发生冲突须回读后按原意图合并，只重新提交这次修改，不能把旧全量 document 配新 revision 直接覆盖。
+
 ## 文件
 
 quotes、settlements、receipts 支持 pdf/excel；contracts、designs 支持 pdf；reimbursements 支持 pdf/excel，传 recordIds（1–40 条），images 按需开启。当前不支持的模块/格式不要构造 URL。客户端下载大文件应等待 HTTP 完成，不要因稍慢反复生成。
@@ -161,3 +168,16 @@ READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务
 ```
 
 更新时省略 title、assigneeId、status、notes、reviewNote 会保留原值。preconditions.version 是记录哈希；form.updatedAt 是业务保存使用的时间戳，两者不能混用。服务器从已验证的快照自动填入 updatedAt，客户端可省略；如显式传入，必须和详情的 updatedAt 完全一致。prepare 后他人修改会使 execute 拒绝，重新读取后合并，不能绕过校验。新建时 id=null，仍按 schema 提供 title、deliveryDate、assigneeId、status、notes、reviewNote。保存后回读日期及未修改字段。
+
+灯具点位固定图标：`spot` 圆形射灯、`ceilingLight` 方形格栅灯、`linearLight` 长方形明装灯、`trackLight` 细条轨道灯。`magneticTrack` 为磁吸轨道线路，layer=`light`，path 至少两个节点；缩放和旋转同步更新 path 与 x/y。米制产品校准后计米，按根/件销售的轨道沿用手工数量。磁吸轨道电源、驱动和连接件不是轨道线路。
+
+### 机柜、配套设备与他方供货（1.12.0）
+
+网页方案编辑器采用图纸缩略图导航：左侧切换楼层和分类图纸，桌面顶部集中绘图与编辑工具，右侧独立属性栏；手机和平板使用右侧工具列和绘图弹层，缩放与复位可直接点击。保存时自动合并不冲突的页面修改；同一字段冲突时由用户选择保留哪一方。MCP 仍须读取最新 revision 后保存，不绕过版本校验。
+
+- `points[].placement` 缺省 `plan`，表示图纸点位；`cabinet` 是柜内设备，`accessory` 是配套设备。这两类保留在 document.points 中作为单一数据源，不另建重复报价项，画布和图例不显示。
+- 机柜点位为 `symbol: "rack", layer: "equipment"`。机柜模型可不绑定产品，此时本体不报价；绑定机柜产品才计入机柜本体价格。
+- 柜内设备必须 `parentPointId` 指向同一楼层的机柜点位。配套设备可关联同层灯带/轨道等点位。两类清单设备需要 product、手工 quantity、layer=`equipment`、symbol=`equipment`、path=[]、autoLength=false，不使用 pendingScale。数量不自动猜测。
+- `supplyMode` 缺省 `ours`。仅当用户说明不由我方供货时，将指定点位设为 `external`；仍显示点位及“他方供货”图例，不计入设备预算、导出报价与新建报价。此字段只影响本方案指定设备，不修改产品库、其他方案、安装面颜色或关联电源的供货范围。
+- 例如他方柜体灯带设 external，与它关联的我方驱动、电源以 accessory、parentPointId=灯带点位id、supplyMode=ours 单独录入。柜内模块同理只算一次，不在图纸上重复摆放。
+- 删除机柜/关联点位时，保留的柜内/配套设备清除 parentPointId，并转为 accessory；不偷偷删掉其报价明细。整方案清空时，图纸点位、柜内及配套设备一并清空，并移除场景引用，仍需 CRM 确认。

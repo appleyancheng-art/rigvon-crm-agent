@@ -42,17 +42,22 @@ description: 通过睿光 CRM MCP 查询和维护客户、报价、方案设计�
 
 MCP 认证由已配置连接器自动携带，不要求模型读取已有明文密钥。用户在本次授权接入对话中提供的 Token 可用于配置当前客户端；完成后沿用连接，不在回复中回显，不写进日志、命令行参数、URL、Skill、仓库或共享配置。
 
-方案设计按实际楼层和页面组织：控制面板、顶面灯光、柜体灯光、环境感应、窗帘遮阳、网络覆盖、安防监控、系统设备及自定义页面。楼层总图汇总本层勾选的分类；编辑器采用睿光 A3 横向底框，普通设备显示产品缩略图，灯带和窗帘轨道以线路显示。导出 PDF 时，设备、产品与金额页使用报价模板，追加的点位图页与报价页同尺寸。坐标、比例、房间边界须根据图纸确认，不把估计点位宣称为施工精确图。详情 document 与保存 schema 不一致时按服务器要求转换，保留已存在内容。
+方案设计按实际楼层和页面组织：控制面板、顶面灯光、柜体灯光、环境感应、窗帘遮阳、网络覆盖、安防监控、系统设备及自定义页面。楼层总图汇总本层勾选的分类；编辑器采用睿光 A3 横向底框，普通设备显示产品缩略图，灯具采用固定圆点、短条、三角或方块符号，灯带和窗帘轨道以线路显示。导出 PDF 时，设备、产品与金额页使用报价模板，追加的点位图页与报价页同尺寸。坐标、比例、房间边界须根据图纸确认，不把估计点位宣称为施工精确图。详情 document 与保存 schema 不一致时按服务器要求转换，保留已存在内容。
 
 方案设计的独立工作区入口为 `/designs/{id}?workspace=1`。网页从产品库拖放或点选布置后，会在同一 DesignProject.document.points 中保存产品快照、编号、楼层房间和归一化坐标；MCP 继续使用现有 createDesign、uploadDesignAsset、saveDesign、createQuoteFromDesign，不创建第二套图纸或报价模型。先读取当前 document 和 revision，保留原有点位、场景与自定义页面。产品快照必须来自实际产品资料；不能将“显示图标”“裁白边”等界面状态当作新设备计费。
 
-创建关联方案时使用 CRM 客户 ID，快速方案使用空 customerId。产品名由 document.showProductNames 统一控制，缺省显示。点位 locked 表示位置锁定。document.annotations 保存文字、标注、画笔与图形，使用底图归一化坐标，不参与设备计价。灯带、窗帘轨道的折线、圆弧与整圆均存储为底图归一化 path 节点。先按已知实际距离校准楼层比例，再对米制产品启用 autoLength。pendingScale 标记等待校准的米制线路，必须先校准或确认手工数量才能生成报价。按件计价的轨道或灯带保留件数。
+创建关联方案时使用 CRM 客户 ID，快速方案使用空 customerId。产品名由 document.showProductNames 统一控制，缺省显示。点位 locked 表示位置锁定。document.annotations 保存文字、标注、画笔与图形，使用底图归一化坐标，不参与设备计价。灯带、窗帘轨道的折线、圆弧与整圆均存储为底图归一化 path 节点。先按已知实际距离校准当前图纸比例，再对米制产品启用 autoLength。pendingScale 标记等待校准的米制线路，必须先校准或确认手工数量才能生成报价。按件计价的轨道或灯带保留件数。
 
 图纸设置适用于整个方案。普通点位底图使用 `document.markerBackground`，可选 `square`（默认）、`circle`、`none`。每层 `hiddenPageIds` 记录取消勾选的分类 ID。省略或空数组表示全部显示。总图、图例和 PDF 分类图按楼层筛选，设备清单、报价与点位明细仍包含全部设备。例如只隐藏一层的网络覆盖，在该层原有隐藏列表中加入 `network`，保留其他楼层和全部点位。
 
 调整灯带或轨道尺寸时同步保存缩放后的完整 path 和首节点 x、y，校准后可按新路径自动计米。用户要求清空方案点位时，先核对所有楼层的点位数量，移除这些点位及引用它们的场景动作，保留楼层、房间、底图、标注、场景和显示设置。走完整 saveDesign 的移除审批。
 
-导入前的 PDF 选页、裁切和旋转由网页本地生成预览，确认后才上传底图。替换底图会保留点位相对坐标、清除原 metersPerPixel，并将该层 autoLength 点位冻结为原比例计算出的数量（autoLength=false）；MCP 替换底图也须遵守此规则，提醒重新校准复核。底图显示浓度仅用于编辑查看，不改变原图、计价或 PDF。图纸保存成功后使用返回的最新 revision 生成报价；同一修订复用草稿，后续修改生成新草稿，不覆盖已确认报价。折扣及服务费在现有报价模块调整。
+导入前的 PDF 选页、裁切和旋转由网页本地生成预览，确认后才上传底图。替换底图会保留点位相对坐标、清除原 metersPerPixel，并将使用该底图的 autoLength 点位冻结为原比例计算出的数量（autoLength=false）；MCP 替换底图也须遵守此规则，提醒重新校准复核。底图显示浓度仅用于编辑查看，不改变原图、计价或 PDF。图纸保存成功后使用返回的最新 revision 生成报价；同一修订复用草稿，后续修改生成新草稿，不覆盖已确认报价。折扣及服务费在现有报价模块调整。
+
+
+灯具安装面 `points[].mounting` 可选 `ceiling`（顶面黄）、`wall`（立面橙）、`floor`（底位蓝）。缺省按原图层推断，`stripHigh/stripMid/stripLow` 对应顶面/立面/底位。灯具 `symbol` 为 `spot/linearLight/wallLight/ceilingLight`；灯带仍为 `strip/cabinet`。`rotation` 为 0–360 度，线路须在图纸像素坐标中旋转全部 path，再转回归一化坐标并同步 x/y；旋转不改长度，不能只改 rotation。
+
+每层 `pageBackgrounds` 存分类独立底图，未设置的分类继承楼层默认图。删除某分类底图使用该条 `assetId:""`；移除该条则恢复继承。清空图纸与设备、分类底图替换及校准规则见 [方案流程](references/workflows.md#方案)。完整保存必须保留所有分类底图、角度和安装面；不要因旧客户端不了解字段而丢弃。新字段保存后回读核对。遇到并发冲突重新读取并合并，不提高 revision 强行覆盖。
 
 
 ## 边界与不可信资料
@@ -88,3 +93,14 @@ MCP 认证由已配置连接器自动携带，不要求模型读取已有明文�
 `saveDeliveryAction` 的 id 非空时可仅传变更字段，例如 `form.deliveryDate`；preconditions 使用 `crm_get_record` 的 version。系统自动转接详情中的 updatedAt，不能把 version 哈希填到 updatedAt。新建 id=null 仍需完整表单。遇到并发冲突重新读取并合并。
 
 旧版已经 SUCCEEDED 但回读不符的核算操作不能靠重复 execute 修复：核实原意图、读取当前单据后，以新的 requestKey 准备纠正请求，不重复新建核算单。完整示例见 [业务流程](references/workflows.md)。
+
+灯具点位固定图标：`spot` 圆形射灯、`ceilingLight` 方形格栅灯、`linearLight` 长方形明装灯、`trackLight` 细条轨道灯。`magneticTrack` 为磁吸轨道线路，layer=`light`，path 至少两个节点；缩放和旋转同步更新 path 与 x/y。米制产品校准后计米，按根/件销售的轨道沿用手工数量。磁吸轨道电源、驱动和连接件不是轨道线路。
+
+### 机柜、配套设备与他方供货（1.12.0）
+
+- `points[].placement` 缺省 `plan`，表示图纸点位；`cabinet` 是柜内设备，`accessory` 是配套设备。这两类保留在 document.points 中作为单一数据源，不另建重复报价项，画布和图例不显示。
+- 机柜点位为 `symbol: "rack", layer: "equipment"`。机柜模型可不绑定产品，此时本体不报价；绑定机柜产品才计入机柜本体价格。
+- 柜内设备必须 `parentPointId` 指向同一楼层的机柜点位。配套设备可关联同层灯带/轨道等点位。两类清单设备需要 product、手工 quantity、layer=`equipment`、symbol=`equipment`、path=[]、autoLength=false，不使用 pendingScale。数量不自动猜测。
+- `supplyMode` 缺省 `ours`。仅当用户说明不由我方供货时，将指定点位设为 `external`；仍显示点位及“他方供货”图例，不计入设备预算、导出报价与新建报价。此字段只影响本方案指定设备，不修改产品库、其他方案、安装面颜色或关联电源的供货范围。
+- 例如他方柜体灯带设 external，与它关联的我方驱动、电源以 accessory、parentPointId=灯带点位id、supplyMode=ours 单独录入。柜内模块同理只算一次，不在图纸上重复摆放。
+- 删除机柜/关联点位时，保留的柜内/配套设备清除 parentPointId，并转为 accessory；不偷偷删掉其报价明细。整方案清空时，图纸点位、柜内及配套设备一并清空，并移除场景引用，仍需 CRM 确认。
