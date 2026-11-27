@@ -1,5 +1,11 @@
-# Merge this server entry into the supported Codex configuration.
-# RIGVON_CRM_TOKEN must be available to the actual client process.
+# Merge only this server into the actual client's supported configuration.
+# Choose ONE authentication method after the user supplies a Token.
+# Never install placeholders as working credentials.
 [mcp_servers.rigvon-crm]
 url = "https://crm.rigvon.cn/api/mcp"
+# Option A: use only when the ACTUAL client process can read this variable.
 bearer_token_env_var = "RIGVON_CRM_TOKEN"
+# Option B: remove bearer_token_env_var above, then add this header in the
+# PRIVATE USER configuration only (0600). Replace the placeholder there.
+# http_headers = { Authorization = "Bearer <USER_PROVIDED_TOKEN>" }
+# Keep real Tokens out of project/shared configs, Skill files and this package.

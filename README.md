@@ -2,9 +2,9 @@
 
 将 MCP 连接与业务 Skill 一起交给你的 Agent。仓库仅包含公开接入资料，不包含 CRM 源码、客户数据或真实 Token。
 
-在 CRM 的 **工作首页上方的「AI 能力」 → 复制接入指令** 复制说明，发送给支持工具配置的 Agent。由它读取最新版 [AGENT_SETUP.md](AGENT_SETUP.md)，完成客户端检查、Skill 安装和连接配置。首次授权仍可能需要你在连接器设置中填写 Token；这段指令不是保证所有客户端全自动完成的安装命令。
+在 CRM「AI 能力」点击 **「复制一键接入指令」**，先把不含 Token 的指令发给新 AI。它会读取官方接入包，检查客户端、安装 Skill 并准备连接。等它提示“已准备好，请发送这个 AI 对应的 CRM Token”时，你再创建对应助手或使用已有有效凭据，把 Token 单独发进同一个对话框；AI 完成配置后实际调用 `crm_capabilities` 验证。
 
-**Grok Bot 桌面端已于 2026-11-14 实测接通并调用 crm_capabilities。** 接入路径为“连接应用 → 添加自定义连接器 → 远程 HTTPS”，Token 填在该连接器的 HTTP 标头中。安全输入框单独显示“已保存”不代表认证已经配置，具体步骤见 [Grok Bot 接入与排错](rigvon-crm/references/connection.md)。版本或界面不同需重新核对，不能把其他模型 API 的支持情况当作桌面客户端支持情况。
+具备配置能力的 AI 会自动完成这些步骤；平台要求用户手动建立连接时，AI 会先说明限制和剩余步骤，不提前索要无法使用的 Token。详细流程见 [AGENT_SETUP.md](AGENT_SETUP.md)。已接入的 AI 使用「复制更新指令」，保留原连接和有效 Token，无需重新部署。
 
 - MCP：`https://crm.rigvon.cn/api/mcp`，Streamable HTTP / Bearer Token。
 - 业务 Skill：[rigvon-crm/SKILL.md](rigvon-crm/SKILL.md)。需连同 references 目录安装。
@@ -59,6 +59,10 @@ CRM 同步优化字段级 AI 来源、手机列表、深色显示与系统保存
 
 方案支持点位底图、逐层类别可见性和线路缩放。保存方案前先读取完整 document 和 revision，隐藏类别仍计入设备清单和报价。清空方案点位需确认。已接入的 Agent 用「复制更新指令」更新 Skill 并刷新工具，通过 crm_describe_operation 查看 saveDesign 的图纸字段。
 
-## 当前版本 Skill v1.10.1 / MCP v1.7.1（2026-11-27）
+## Skill v1.10.1 / MCP v1.7.1（2026-11-27）
 
 修复项目核算嵌套数量、提成比例及负责人未保存的问题；统一校验、按稳定标识合并明细，省略值保留，保存后在事务内回读校验，失败整单回滚。修复已有送货单更新时缺失版本，自动从通过 preconditions 的详情传递 updatedAt。操作示例见 [业务流程](rigvon-crm/references/workflows.md)。现有 Token 继续使用，在「AI 能力」复制更新指令更新完整 Skill、刷新工具，只读核对 crm_capabilities 为 1.7.1 及两个保存操作的 schema。
+
+## 当前版本 Skill v1.11.0 / MCP v1.7.1（2026-11-27）
+
+接入改为先发送通用指令、AI 准备好后再提供 Token。允许 Agent 使用用户在本次授权对话中提供的 Token 配置当前客户端；优先凭据存储，支持用户私有配置作为备选。分别验证 Skill 加载和实际 MCP 调用。公开指令及下载包不含凭据，CRM 业务权限和服务端 Token 管理保持不变。已有 Agent 复制更新指令即可沿用新指南，无需换 Token 或重建连接。
