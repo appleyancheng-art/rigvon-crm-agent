@@ -55,6 +55,10 @@ CRM 同步优化字段级 AI 来源、手机列表、深色显示与系统保存
 
 报销支持未报销、已发送、已报销三个状态。已发送表示资料已提交，金额仍计入待报销。更新 Skill 并刷新工具后，可通过 `crm_describe_operation` 核对单笔新增和修改的状态选项。
 
-## 当前版本 Skill v1.10.0 / MCP v1.7.0
+## Skill v1.10.0 / MCP v1.7.0
 
 方案支持点位底图、逐层类别可见性和线路缩放。保存方案前先读取完整 document 和 revision，隐藏类别仍计入设备清单和报价。清空方案点位需确认。已接入的 Agent 用「复制更新指令」更新 Skill 并刷新工具，通过 crm_describe_operation 查看 saveDesign 的图纸字段。
+
+## 当前版本 Skill v1.10.1 / MCP v1.7.1（2026-11-27）
+
+修复项目核算嵌套数量、提成比例及负责人未保存的问题；统一校验、按稳定标识合并明细，省略值保留，保存后在事务内回读校验，失败整单回滚。修复已有送货单更新时缺失版本，自动从通过 preconditions 的详情传递 updatedAt。操作示例见 [业务流程](rigvon-crm/references/workflows.md)。现有 Token 继续使用，在「AI 能力」复制更新指令更新完整 Skill、刷新工具，只读核对 crm_capabilities 为 1.7.1 及两个保存操作的 schema。

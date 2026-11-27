@@ -117,3 +117,47 @@ prepare 的 changes、approvalReasons 和 stockPreview 描述具体改动与库�
 ## 收据
 
 使用 receipts 模块与 [收据管理](receipts.md)；先查实收来源，再开具或独立开具。不要将收据操作误当作新增收款。
+
+## 项目核算明细保存（MCP v1.7.1）
+
+先 `crm_get_record({module:"installation-fees",id})` 取得当前 version、items 和 commissions；人员由 `crm_search({module:"people"})` 查询。推荐局部修改：
+
+```json
+{
+  "operation": "saveInstallationCalculationAction",
+  "input": {
+    "id": "<核算单ID>",
+    "form": {"payload": {
+      "items": [{"id": "<灯带明细ID>", "quantity": 80}],
+      "commissions": [{"id": "<方案设计明细ID>", "rate": 0.02, "assigneeId": "<人员ID>"}]
+    }}
+  },
+  "preconditions": [{"module": "installation-fees", "id": "<核算单ID>", "version": "<回读version>"}],
+  "requestKey": "<本次意图唯一值>",
+  "reason": "按用户要求修正灯带数量与方案设计提成归属"
+}
+```
+
+明细可用持久 id，也可用 `items[].productType` / `commissions[].role` 或原 sortOrder；标识同时提供时必须一致，重排数组不改变匹配。无标识时必须按系统标准顺序完整提交 8 项品类或 7 项角色，局部无标识行拒绝。品类与角色以详情为准；不要把 `installationFee`、`grossProfit`、`commissionTotal` 等计算结果当作输入。
+
+quantity 非负，最多三位小数。嵌套 rate 为 0~1 比例，最多六位小数；5% 传 0.05。`unit`、`unitPrice`、`sortOrder` 可回传原值，不能改变固定规则。省略行和字段保留；空数组不代表清空。不要同时提供 payload 和其他 form 字段，也不要混用嵌套数组与网页索引字段。兼容网页 `quantity-0`、`rate-0` 等字段，但 `rate-0=5` 表示 5%，建议 Agent 统一使用嵌套契约。
+
+手填提成传 `isManualAmount:true,amount:500`，恢复自动计算传 `isManualAmount:false` 并省略 amount。选择系统人员使用有效 assigneeId，姓名以系统记录为准；非系统人员传 `assigneeId:null,assigneeName:"姓名"`；清空归属两者显式传 null。未提交的手填金额和负责人保持原值。关联核算单的名称及客户来自台账，不能借保存修改关联模式。
+
+READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务端逐项验证数量、提成、人员及金额；回读不一致时整个事务回滚并返回错误，不会 SUCCEEDED。自动金额按原有规则计算、逐行四舍五入后汇总。已确认并带日期的提成进入原有月度汇总。旧版错误操作已经 SUCCEEDED 时，重复 execute 只返回旧结果；应核实用户原意图和最新数据，以新 requestKey 提交纠正修改，不重建整单。
+
+## 已有送货单更新（MCP v1.7.1）
+
+先读取 `deliveries` 详情，再 prepare：
+
+```json
+{
+  "operation": "saveDeliveryAction",
+  "input": {"id": "<送货单ID>", "form": {"deliveryDate": "2026-11-21"}},
+  "preconditions": [{"module": "deliveries", "id": "<送货单ID>", "version": "<回读version>"}],
+  "requestKey": "<本次意图唯一值>",
+  "reason": "按用户要求更正送货日期"
+}
+```
+
+更新时省略 title、assigneeId、status、notes、reviewNote 会保留原值。preconditions.version 是记录哈希；form.updatedAt 是业务保存使用的时间戳，两者不能混用。服务器从已验证的快照自动填入 updatedAt，客户端可省略；如显式传入，必须和详情的 updatedAt 完全一致。prepare 后他人修改会使 execute 拒绝，重新读取后合并，不能绕过校验。新建时 id=null，仍按 schema 提供 title、deliveryDate、assigneeId、status、notes、reviewNote。保存后回读日期及未修改字段。

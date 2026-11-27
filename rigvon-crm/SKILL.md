@@ -24,7 +24,7 @@ description: 通过睿光 CRM MCP 查询和维护客户、报价、方案设计�
 3. 调用 `crm_describe_operation` 查看输入。表单字段放在 `input.form`；完整文档放 `form.payload`（模板编辑的 `payload` 位于 input 顶层）。布尔 true 表示勾选；数组作为重复表单字段；产品图片优先传 `form.imageUrl` 公开 HTTP(S) 图片直链，由服务端转存；本地图片传 `form.image:{name,mime,fileBase64}`（兼容 `file`），≤3MB，不能与 URL 同传。其他附件以操作描述为准；总请求最多4MB，客户端自身可能更小。
 4. `crm_prepare_operation`：填写准确的 reason、唯一 requestKey，已有记录传 `preconditions:[{module,id,version}]`。同一意图重试必须使用相同 requestKey 和相同内容。
 5. 返回 READY：核对 changes、warnings 与用户意图一致后调用 `crm_execute_operation`。返回 PENDING：把 approvalUrl 转成 CRM 完整链接交给用户，等待其在 CRM 确认；用 `crm_operation_status` 查询；APPROVED / nextAction=execute 时继续 execute。方向有误可用 `crm_cancel_operation` 撤回未执行操作。Agent 不可自行批准，也不可改用另一工具绕过。
-6. 仅在 SUCCEEDED 后报告完成，并返回真实单据链接、影响条目和结果。网络断开时先查 operation_status，不换 requestKey 重建。遇到版本冲突重新读取、合并，再准备新的请求。过期或被拒绝的操作不能继续。
+6. 仅在 SUCCEEDED 后报告完成，并返回真实单据链接、影响条目和结果。项目核算与送货更新还需 crm_get_record 回读本次变更字段，核对数量、比例、负责人或日期。网络断开时先查 operation_status，不换 requestKey 重建。遇到版本冲突重新读取、合并，再准备新的请求。过期或被拒绝的操作不能继续。
 
 ## 业务规则
 
@@ -78,3 +78,11 @@ MCP 认证由已配置连接器自动携带。允许客户端通过已有安全�
 ## 收据管理（v1.7.0）
 
 收据查询、来源选择、关联开具、独立临时开具、作废、删除与导出见 [收据管理](references/receipts.md)。开具不重复记账，删除和作废仍需 CRM 审批。MCP 能力版本应为 v1.4.0 或更高。
+
+## 项目核算与送货更新（v1.10.1）
+
+`saveInstallationCalculationAction` 推荐 `form.payload`，支持直接使用 `form`，不能混用。八类数量与七类提成按明细 id、品类/角色或 sortOrder 合并；省略字段、行和空数组均保留原值。`commissions[].rate` 是比例（0.05=5%），`assigneeId` 使用真实人员 ID；手填提成需 `isManualAmount:true` 和 `amount`。固定品类、单价和角色不能改写，未知或重复行会失败。保存后回读明细与 `computedTotals`；不得仅凭旧版 SUCCEEDED 认定历史明细已写入。
+
+`saveDeliveryAction` 的 id 非空时可仅传变更字段，例如 `form.deliveryDate`；preconditions 使用 `crm_get_record` 的 version。系统自动转接详情中的 updatedAt，不能把 version 哈希填到 updatedAt。新建 id=null 仍需完整表单。遇到并发冲突重新读取并合并。
+
+旧版已经 SUCCEEDED 但回读不符的核算操作不能靠重复 execute 修复：核实原意图、读取当前单据后，以新的 requestKey 准备纠正请求，不重复新建核算单。完整示例见 [业务流程](references/workflows.md)。
