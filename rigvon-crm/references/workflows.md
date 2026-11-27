@@ -202,3 +202,20 @@ READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务
 - 缩放：Command+Shift+＞/＜，Command+0 实际大小，Option+Command+0 适合窗口，Shift+Command+0 适合所选点位，Option+Shift+Command+0 适合全部内容。仍支持普通鼠标滚轮缩放、中键按住拖动画布。Command/Ctrl 拖设备临时跳过吸附；Shift 拖动约束方向。
 - iPhone/iPad：双指开合缩放、双指滑动画布；先选中点位，再在该点位上双指扭转旋转，可松开一指继续调整。连接键盘时沿用 Command 快捷键。网页无法接管的浏览器保留键可使用相应工具按钮；文字输入时不执行画布快捷键。
 - 保存字段及 Token、权限不变。已有 Agent 发送复制更新指令更新 Skill，刷新工具并实际调用 `crm_capabilities`，确认版本1.9.1。
+
+
+## 客户定稿、归档与合同附件（Skill 1.15.0 / MCP 1.10.0）
+
+只有用户明确选定版本时才定稿，不能把最新一版或金额最高的一版当作定稿。`crm_get_record(customers,id)` 返回 `finalQuoteId`、`finalDesignId`、`finalizedAt` 和 `proposalOptions`。允许同时选一份报价和一份方案，也允许只选其中一种；其他未删除报价和方案都会分别归档，不删除、不改变报价业务状态。
+
+先 describe `finalizeCustomerProposalsAction`，再 prepare / execute：
+```json
+{"operation":"finalizeCustomerProposalsAction","input":{"customerId":"<客户ID>","form":{"quoteId":"<报价ID或null>","designId":null,"expectedUpdatedAt":"<客户详情updatedAt>"}},"preconditions":[{"module":"customers","id":"<客户ID>","version":"<最新version>"}],"requestKey":"<新的定稿意图键>","reason":"按用户选择定稿并归档其他版本"}
+```
+`quoteId` 和 `designId` 至少一个非空；字段空值用 JSON null，不传文字“null”。prepare 会展示选定版本与归档对象，execute 原子保存；随后回读客户以及归档列表。`crm_search` 的 quotes/designs 默认只列未归档，`view:"archived"` 列归档，`view:"deleted"` 列回收站；可增加 `customerId`。移回目录用 `unarchiveQuoteAction` / `unarchiveDesignAction`，顶层参数 `id`，提供对应记录 preconditions。恢复不会自动定稿。
+
+合同 `saveContractAction` 使用完整 `form.payload`。`partyType:"PERSONAL"` 为个人合同，甲方使用 `partyAName`；`ENTERPRISE` 为企业合同，甲方使用必填 `partyACompany`，`partyAName` 为联系人，`partyAIdNumber` 为统一社会信用代码。旧客户端省略新增字段会保留已有设置。
+
+`includeAttachments:false` 仅导出竖版合同。`true` 时必须关联客户，并选 `attachmentQuoteId` 和/或 `attachmentDesignId`，来源必须属于该客户。优先采用用户确认的定稿 ID，也可按明确指示选择其他版本。保存成功后固定当时 PDF 快照；源报价/方案之后修改或归档，不会改动已存附件。需要更新附件时重新保存合同。`crm_export_link` 导出一份 PDF，顺序为横版合同、报价、方案，所有部分均横版。导出不包含内部成本和备注；附件保存失败时整单失败，不报告成功。
+
+网页方案操作补充：Option 拖动复制，Option 拖边缘中心缩放；复制/粘贴格式只传递 iconScale，线路不改变长度或数量。可多选粘贴，或应用到本图同款（跳过锁定项）。⌥⌘C/V 沿用 Keynote；Safari 可能优先打开控制台，可用格式按钮或 ⌥⇧C/V。Agent 批量修改尺寸仍需保留完整 document 的其余内容与最新 revision，不更改设备型号、安装面颜色、供货范围或报价数量。
