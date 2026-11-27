@@ -181,3 +181,14 @@ READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务
 - `supplyMode` 缺省 `ours`。仅当用户说明不由我方供货时，将指定点位设为 `external`；仍显示点位及“他方供货”图例，不计入设备预算、导出报价与新建报价。此字段只影响本方案指定设备，不修改产品库、其他方案、安装面颜色或关联电源的供货范围。
 - 例如他方柜体灯带设 external，与它关联的我方驱动、电源以 accessory、parentPointId=灯带点位id、supplyMode=ours 单独录入。柜内模块同理只算一次，不在图纸上重复摆放。
 - 删除机柜/关联点位时，保留的柜内/配套设备清除 parentPointId，并转为 accessory；不偷偷删掉其报价明细。整方案清空时，图纸点位、柜内及配套设备一并清空，并移除场景引用，仍需 CRM 确认。
+
+
+## 方案直接编辑（Skill 1.13.0 / MCP 1.9.0）
+
+- `document.points[].iconScale` 可选，0.25–4，缺省 1。图标放大至 150% 写 `1.5`；普通产品、机柜和灯具均适用，线路仅改变线宽和光晕。画布和 PDF 使用同一倍率，不改变产品数量、路径或报价。完整保存必须保留未修改点位的倍率。
+- 延长灯带/轨道时固定另一端，更新 `path` 及 `x/y=path[0]`；物理长度变化才重算计米。`iconScale` 不得代替线路长度。
+- 灯光默认顶面黄色、中位/立面橙色、低位/底位蓝色。按 `mounting` 或缺省图层取色；改变灯带施工类别时清除旧安装面覆盖或同步正确 `mounting`。
+- 文字再编辑保留 annotation 的 `id`、`floorId`、`pageId`、`kind`、`nodes`，只修改 `text`，不重复新增。
+- 网页在当前标签页打开方案。按住鼠标中键平移；选择工具后弹出对应产品，灯带和轨道可先选直线/圆弧/整圆/折线。显式选择产品会启用其图纸类别。设备双击换型，文字双击编辑，旋转手柄可直接拖动；吸附可在图纸设置关闭或按 Alt 临时跳过。iPhone 同桌面使用横向可滑动长条工具栏。
+
+更新已有方案前读取最新 revision/version 和完整 document。保存使用 crm_prepare_operation → crm_execute_operation，回读确认 `iconScale`；大小调整不应改变 bill of materials。现有 Token 继续使用，刷新工具并 describe(saveDesign) 验证新字段。
