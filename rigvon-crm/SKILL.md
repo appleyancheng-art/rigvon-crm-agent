@@ -110,8 +110,8 @@ MCP 认证由已配置连接器自动携带，不要求模型读取已有明文�
 客户定稿、归档恢复、合同类型和附件导出参见 [业务流程](references/workflows.md#客户定稿归档与合同附件skill-1150--mcp-1100)。定稿须按用户明确选择，不能根据版本新旧自行决定。
 
 
-## 报价显示选项（Skill 1.16.0 / MCP 1.11.0）
+## 报价显示选项（Skill 1.17.0 / MCP 1.12.0）
 
-按用户选择调用 `crm_export_link` 的报价选项：`onlyFinalTotal:true` 仅显示折后总额，PDF/Excel 不含单价、小计、原总价和费用拆分，Excel 无内部核算与隐藏价格。默认 false，不改变报价数据。还可设置 `showUnitPrice`、`showBrand`、`showProductIntroduction`、`showCustomer`、`showCompany`（默认 true）。仅折后总额优先于显示单价，其他展示选项独立生效。
+报价 `crm_export_link` 使用独立布尔字段：`showUnitPrice` 单价、`showOriginalPrice` 标价及原设备总额、`showFinalTotal` 折后总额、`showItemSubtotal` 设备合价、`showRoomSubtotal` 房间小计、`showDiscount` 折扣信息、`showFeeBreakdown` 服务费和调整明细。true 显示，false 不写入导出；选项互不禁用。品牌、简介、客户、公司字段仍可分别选择。Excel 的 `showInternalCalculation` 控制内部成本和毛利，客户用途必须 false，成本权限仍生效。API 省略字段保持原有默认 true；网页客户导出初始不勾内部核算。
 
-合同通过 `saveContractAction` 的 `form.payload.attachmentQuoteExportOptions` 保存同组布尔选项；省略选项保留已有选择，保存后重建报价附件快照。选择只影响报价附件，不改变合同正文与方案。`crm_export_link(module:"contracts")` 使用已保存的选择，不能用下载 URL 临时改写。客户定稿在客户详情，须按用户明确版本选择。详见 [报价指南](references/quoting.md) 与 [业务流程](references/workflows.md)。
+旧 `onlyFinalTotal:true` 仅作兼容，展开为只开 showFinalTotal、关闭其余金额和内部核算；新请求请传独立选项。合同通过 `saveContractAction` 的 `form.payload.attachmentQuoteExportOptions` 保存相同选项，省略字段保留旧值，保存时重建附件快照。合同下载使用快照，不能追加 URL 参数改写。个人/企业合同的乙方收款资料随类型选择；横竖版沿用同套字体、色彩、封面图片。详见 [报价指南](references/quoting.md) 与 [业务流程](references/workflows.md)。

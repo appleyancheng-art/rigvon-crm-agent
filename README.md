@@ -82,8 +82,14 @@ CRM 同步优化字段级 AI 来源、手机列表、深色显示与系统保存
 
 方案改为分类图纸，PDF 不再追加楼层总图；勾选分类决定图纸显示与导出，隐藏不减少设备报价。修复嵌套 CAD 图框裁剪及慢网底图加载，新增 Keynote 式鼠标、键盘与双指操作。已有连接和 Token 继续使用；发送复制更新指令更新 Skill 并刷新工具。详情见 [方案工作流程](rigvon-crm/references/workflows.md)。
 
-## 当前版本 Skill v1.16.0 / MCP v1.11.0（2026-11-27）
+## Skill v1.16.0 / MCP v1.11.0（2026-11-27）
 
 报价 PDF/Excel 新增“仅显示折后总额”：保留设备与数量，隐藏单价、小计、原总价及费用拆分；Excel 同时移除内部核算和隐藏价格数据。合同附带报价可逐项选择同组显示选项，保存后应用到附件快照。客户定稿入口保留在客户详情，客户列表不再显示。Option 拖拽复制时原图标保持原位。
 
 已有连接和 Token 继续使用。复制 CRM 的更新指令，更新完整 Skill 并刷新工具；用 `crm_capabilities` 核对 MCP v1.11.0，再调用 `crm_describe_operation(saveContractAction)` 核对 `attachmentQuoteExportOptions`。导出示例见报价指南，合同保存示例见业务流程。
+
+## 当前版本 Skill v1.17.0 / MCP v1.12.0（2026-11-27）
+
+报价 PDF、Excel 及合同报价附件改为独立的正向显示选项：单价、原价、折后总额、设备合价、房间小计、折扣、服务费及调整明细，勾选才显示。Excel 的内部核算另行控制，未选的结构化价格不会写入隐藏单元格。旧 onlyFinalTotal 参数仍兼容并展开为独立选项。横版合同沿用竖版的封面图片、字体和黑金配色；企业合同使用公司注册地址、税号和对公银行账号。
+
+已有 Token 和连接继续使用。更新完整 Skill 并刷新工具；调用 `crm_capabilities` 核对 1.12.0，调用 `crm_describe_operation(saveContractAction)` 核对附件显示字段。详见报价指南及业务流程。

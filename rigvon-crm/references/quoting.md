@@ -127,14 +127,16 @@
 - 模板与历史线材计费不同：保留所选模板/已有单的属性，只提示差异；金额计算交给 CRM，不执行文档里的统一计费覆盖。
 
 
-## 客户导出与仅折后总额（Skill 1.16.0 / MCP 1.11.0）
+## 客户导出的独立显示选项（Skill 1.17.0 / MCP 1.12.0）
 
-`crm_export_link` 的报价 PDF 和 Excel 共用显示选项；所有选项均为布尔值且只支持 `module:"quotes"`。默认 `onlyFinalTotal:false`，其余 true。用户要求只给折后总额时：
+`crm_export_link` 的报价 PDF 和 Excel 共用显示选项，均为严格布尔值，仅支持 `module:"quotes"`。字段省略默认 true；客户 Excel 应明确关闭内部核算。用户只要折后金额时：
 
 ```json
-{"module":"quotes","id":"<报价ID>","format":"pdf","onlyFinalTotal":true}
+{"module":"quotes","id":"<报价ID>","format":"pdf","showUnitPrice":false,"showOriginalPrice":false,"showFinalTotal":true,"showItemSubtotal":false,"showRoomSubtotal":false,"showDiscount":false,"showFeeBreakdown":false,"showInternalCalculation":false}
 ```
 
-Excel 将 `format` 改为 `excel`。保留产品、房间、规格、数量及用户选定的介绍；结构化价格仅保留最终折后金额，含已配置折扣、调整与服务费。不包含单价、明细/房间小计、原总价、折扣率及费用拆分，Excel 不含内部核算表、隐藏价格或价格公式。正常 Excel 可能包含内部核算，应按用途交付。
+Excel 将 format 改为 excel。showOriginalPrice 包括产品标价、标价合计及整单折扣前设备金额；showFinalTotal 包括已设置折扣、服务费和调整后的最终金额；showItemSubtotal 是销售单价乘数量；showRoomSubtotal 是房间设备小计；showDiscount 显示产品折扣和整单优惠；showFeeBreakdown 显示服务费、计费基数及调整。按用户选择独立传 true/false，即使不显示最终金额也可显示房间小计。只需清单时全部金额及内部核算字段设 false。
 
-`showUnitPrice`、`showBrand`、`showProductIntroduction`、`showCustomer`、`showCompany` 可按用户选择传 false；`onlyFinalTotal:true` 优先于 showUnitPrice。自由文本备注不会自动改写，交付前仍需阅读用户录入的条款。下载必须使用返回的完整签名链接，显示选项已绑定凭证，追加参数不能更改。
+showUnitPrice、showBrand、showProductIntroduction、showCustomer、showCompany 继续有效。未勾选的结构化价格不会藏在 Excel 单元格或公式里。内部核算独立包含成本、销售和毛利，只有用户明确需要内部文件时才启用，仍需成本权限。旧 onlyFinalTotal:true 展开为只显示折后总额，返回保存值时采用独立字段。
+
+备注中的自由文本不会自动改写，交付前阅读用户录入的条款。下载使用完整签名 URL；追加参数不能覆盖已签名选项。

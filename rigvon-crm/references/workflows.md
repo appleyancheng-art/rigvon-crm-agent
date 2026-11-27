@@ -221,16 +221,18 @@ READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务
 网页方案操作补充：Option 拖动复制，Option 拖边缘中心缩放；复制/粘贴格式只传递 iconScale，线路不改变长度或数量。可多选粘贴，或应用到本图同款（跳过锁定项）。⌥⌘C/V 沿用 Keynote；Safari 可能优先打开控制台，可用格式按钮或 ⌥⇧C/V。Agent 批量修改尺寸仍需保留完整 document 的其余内容与最新 revision，不更改设备型号、安装面颜色、供货范围或报价数量。
 
 
-## 合同附带报价的显示选项（Skill 1.16.0 / MCP 1.11.0）
+## 合同附带报价的显示选项（Skill 1.17.0 / MCP 1.12.0）
 
-客户列表不显示“选择定稿”，可进入客户详情的定稿区域。合同编辑中勾选“附带报价／方案”，选择报价后即可勾选报价的显示选项。
-
-调用 `saveContractAction` 时，在完整 `form.payload` 中增加以下对象；其他合同字段从最新详情保留，照常提供 contracts 的 preconditions：
+客户定稿入口位于客户详情。合同编辑勾选“附带报价／方案”后，选择报价并逐项勾选导出内容。调用 saveContractAction，在完整 form.payload 中增加以下对象，其余合同字段保留最新详情并提供 preconditions：
 
 ```json
-{"attachmentQuoteExportOptions":{"onlyFinalTotal":true,"showUnitPrice":true,"showBrand":false,"showProductIntroduction":true,"showCustomer":true,"showCompany":true}}
+{"attachmentQuoteExportOptions":{"showUnitPrice":false,"showOriginalPrice":false,"showFinalTotal":true,"showItemSubtotal":false,"showRoomSubtotal":true,"showDiscount":false,"showFeeBreakdown":false,"showBrand":false,"showProductIntroduction":true,"showCustomer":true,"showCompany":true}}
 ```
 
-onlyFinalTotal 缺省 false，其余缺省 true；旧客户端省略对象或部分键时保留已保存选项。onlyFinalTotal 为 true 时抑制单价，设回 false 恢复所选 showUnitPrice。严格使用布尔值；未知键或字符串布尔值会被拒绝。该选择只影响报价附件，合同正文和方案不变。保存成功后回读 `attachmentQuoteExportOptions` 与 attachments，核对快照；下载合并 PDF 使用已存快照，源报价变化不会改动附件。需要更改显示或更新数据时重新保存合同，再申请合同导出链接。
+此例只显示折后总额及房间小计，不显示单价、原价、设备合价和费用拆分。所有选项独立，缺省新合同默认 true；旧客户端省略对象或部分字段保留已有选择。旧 onlyFinalTotal:true 保存时展开为独立字段；以后可单独重新开启任一字段。未知字段或字符串布尔值会被拒绝。
+
+保存成功后回读 attachmentQuoteExportOptions 与 attachments，核对已生成快照。合同导出使用保存时的附件，源报价变更不会自动改动；需要更新内容或选项时重新保存合同再导出。选项只控制报价附件，不控制合同正文的应付款。
+
+单独合同竖版，合并附件时横版，两者字体、黑金配色、封面图片保持一致。企业合同采用系统已配置的公司注册地址、纳税人识别号、公司账户和开户行；个人合同使用原个人收款资料。切换类型后保存并回读，核对导出中的双方名称与收款账户。
 
 Option 拖拽时保留原点位，副本预览随鼠标移动；松手仅新增一个副本，撤销/取消不会删除原点位。只改变编辑交互，方案保存 schema 不变。
