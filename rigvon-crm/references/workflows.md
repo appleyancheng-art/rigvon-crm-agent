@@ -236,3 +236,12 @@ READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务
 单独合同竖版，合并附件时横版，两者字体、黑金配色、封面图片保持一致。企业合同采用系统已配置的公司注册地址、纳税人识别号、公司账户和开户行；个人合同使用原个人收款资料。切换类型后保存并回读，核对导出中的双方名称与收款账户。
 
 Option 拖拽时保留原点位，副本预览随鼠标移动；松手仅新增一个副本，撤销/取消不会删除原点位。只改变编辑交互，方案保存 schema 不变。
+
+## 合同系统保修年限（Skill 1.18.0 / MCP 1.13.0）
+
+合同新增可编辑的 KNX 系统保修年限 systemWarrantyYears，1–99 整年，默认 5 年；保存后竖版及横版 PDF 同步使用该值。硬件设备的保修期限及范围按对应生产厂商政策执行；不再承诺所有硬件免费更换固定年限。旧客户端省略该字段时保留已有值。
+
+1. 调用 crm_get_record(module="contracts", id)，读取最新 data 和 version。
+2. 保留完整合同内容，将 `form.payload.systemWarrantyYears` 设为用户要求的整数，例如 `8`。不得传字符串、空值或小数。不要用 additionalTerms 覆盖系统保修条款。
+3. 调用 crm_prepare_operation(operation="saveContractAction")，携带该合同最新 preconditions，再执行 operationId。存档合同须先按业务流程恢复草稿。
+4. 回读合同确认 systemWarrantyYears=8，通过 crm_export_link(module="contracts", id) 导出：单独竖版与附带方案/报价的横版均写“KNX 系统由乙方提供 8 年保修服务”。硬件保修范围和年限始终按对应厂家政策。已下载 PDF 不会被追溯修改，必须重新导出。

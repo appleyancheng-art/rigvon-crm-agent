@@ -115,3 +115,7 @@ MCP 认证由已配置连接器自动携带，不要求模型读取已有明文�
 报价 `crm_export_link` 使用独立布尔字段：`showUnitPrice` 单价、`showOriginalPrice` 标价及原设备总额、`showFinalTotal` 折后总额、`showItemSubtotal` 设备合价、`showRoomSubtotal` 房间小计、`showDiscount` 折扣信息、`showFeeBreakdown` 服务费和调整明细。true 显示，false 不写入导出；选项互不禁用。品牌、简介、客户、公司字段仍可分别选择。Excel 的 `showInternalCalculation` 控制内部成本和毛利，客户用途必须 false，成本权限仍生效。API 省略字段保持原有默认 true；网页客户导出初始不勾内部核算。
 
 旧 `onlyFinalTotal:true` 仅作兼容，展开为只开 showFinalTotal、关闭其余金额和内部核算；新请求请传独立选项。合同通过 `saveContractAction` 的 `form.payload.attachmentQuoteExportOptions` 保存相同选项，省略字段保留旧值，保存时重建附件快照。合同下载使用快照，不能追加 URL 参数改写。个人/企业合同的乙方收款资料随类型选择；横竖版沿用同套字体、色彩、封面图片。详见 [报价指南](references/quoting.md) 与 [业务流程](references/workflows.md)。
+
+## 合同系统保修（Skill 1.18.0 / MCP 1.13.0）
+
+合同新增可编辑的 KNX 系统保修年限 systemWarrantyYears，1–99 整年，默认 5 年；保存后竖版及横版 PDF 同步使用该值。硬件设备的保修期限及范围按对应生产厂商政策执行；不再承诺所有硬件免费更换固定年限。旧客户端省略该字段时保留已有值。 修改前读取最新合同，完整保留其他字段，在 saveContractAction 的 form.payload 中设置 systemWarrantyYears 并提供最新 preconditions。执行后回读该值，再通过 crm_export_link 下载核对。详见 [业务流程](references/workflows.md)。
