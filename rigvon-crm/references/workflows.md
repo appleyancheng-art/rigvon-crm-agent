@@ -189,6 +189,16 @@ READY 后 execute，再 get_record 核对每条改动及 computedTotals。服务
 - 延长灯带/轨道时固定另一端，更新 `path` 及 `x/y=path[0]`；物理长度变化才重算计米。`iconScale` 不得代替线路长度。
 - 灯光默认顶面黄色、中位/立面橙色、低位/底位蓝色。按 `mounting` 或缺省图层取色；改变灯带施工类别时清除旧安装面覆盖或同步正确 `mounting`。
 - 文字再编辑保留 annotation 的 `id`、`floorId`、`pageId`、`kind`、`nodes`，只修改 `text`，不重复新增。
-- 网页在当前标签页打开方案。按住鼠标中键平移；选择工具后弹出对应产品，灯带和轨道可先选直线/圆弧/整圆/折线。显式选择产品会启用其图纸类别。设备双击换型，文字双击编辑，旋转手柄可直接拖动；吸附可在图纸设置关闭或按 Alt 临时跳过。iPhone 同桌面使用横向可滑动长条工具栏。
+- 网页在当前标签页打开方案。按住鼠标中键平移；选择工具后弹出对应产品，灯带和轨道可先选直线/圆弧/整圆/折线。显式选择产品会启用其图纸类别。设备双击换型，文字双击编辑，旋转手柄可直接拖动；吸附可在图纸设置关闭或按 Command/Ctrl 临时跳过。iPhone 同桌面使用横向可滑动长条工具栏。
 
 更新已有方案前读取最新 revision/version 和完整 document。保存使用 crm_prepare_operation → crm_execute_operation，回读确认 `iconScale`；大小调整不应改变 bill of materials。现有 Token 继续使用，刷新工具并 describe(saveDesign) 验证新字段。
+
+## 分类图纸与 Keynote 操作（Skill 1.14.0 / MCP 1.9.1）
+
+- 楼层总图页已取消。保留 `floors[].assetId` 作为各分类共用的默认底图，`pageBackgrounds` 可独立替换或移除当前分类底图。不要删除旧楼层、设备、共享标注或原始附件来模拟取消总图。
+- `hiddenPageIds` 只控制本层分类图纸与图例显示。PDF 仅输出勾选且存在底图、点位或标注的分类图，不插入楼层总图。隐藏设备仍按原供货范围进入清单和报价。存量 `annotations[].pageId=":all"` 继续作为共享标注。
+- PDF 导入改进嵌套 CAD 外框与标题栏识别；用户应在确认导入前复核裁剪预览，可恢复整页或手动调整。慢网底图会显示加载状态，短暂失败重试，最终失败可点重新加载；不能把失败提示当作新图纸保存。
+- Mac：Command 拖控制点旋转，Shift 按45°步进；Option+Command 围绕对侧控制点旋转。普通拖控制点等比例缩放，默认固定对侧；Option 改为中心缩放。Option 拖设备复制，Command+D 原位偏移复制，方向键微移1像素、Shift+方向键10像素。
+- 缩放：Command+Shift+＞/＜，Command+0 实际大小，Option+Command+0 适合窗口，Shift+Command+0 适合所选点位，Option+Shift+Command+0 适合全部内容。仍支持普通鼠标滚轮缩放、中键按住拖动画布。Command/Ctrl 拖设备临时跳过吸附；Shift 拖动约束方向。
+- iPhone/iPad：双指开合缩放、双指滑动画布；先选中点位，再在该点位上双指扭转旋转，可松开一指继续调整。连接键盘时沿用 Command 快捷键。网页无法接管的浏览器保留键可使用相应工具按钮；文字输入时不执行画布快捷键。
+- 保存字段及 Token、权限不变。已有 Agent 发送复制更新指令更新 Skill，刷新工具并实际调用 `crm_capabilities`，确认版本1.9.1。
