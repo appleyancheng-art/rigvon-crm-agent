@@ -1,6 +1,6 @@
 {
   "name": "rigvon-crm-agent",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "repository": "https://github.com/Appleyancheng-art/rigvon-crm-agent",
   "setup": "AGENT_SETUP.md",
   "skill": {
@@ -40,7 +40,7 @@
     "skillVerifiedSeparately": true
   },
   "updatedAt": "2026-11-28",
-  "capabilityVersion": "1.13.0",
+  "capabilityVersion": "1.14.0",
   "onboarding": {
     "mode": "instructions-then-token",
     "tokenRequestAfter": "client-configuration-preflight",

@@ -119,3 +119,11 @@ MCP 认证由已配置连接器自动携带，不要求模型读取已有明文�
 ## 合同系统保修（Skill 1.18.0 / MCP 1.13.0）
 
 合同新增可编辑的 KNX 系统保修年限 systemWarrantyYears，1–99 整年，默认 5 年；保存后竖版及横版 PDF 同步使用该值。硬件设备的保修期限及范围按对应生产厂商政策执行；不再承诺所有硬件免费更换固定年限。旧客户端省略该字段时保留已有值。 修改前读取最新合同，完整保留其他字段，在 saveContractAction 的 form.payload 中设置 systemWarrantyYears 并提供最新 preconditions。执行后回读该值，再通过 crm_export_link 下载核对。详见 [业务流程](references/workflows.md)。
+
+## 合同付款、Word 与报价介绍页（Skill 1.19.0 / MCP 1.14.0）
+
+完整保存合同前回读最新版本。`paymentInstallments:2` 保留两笔手填金额和设备安装前 `secondPaymentDays` 个工作日；`3` 按项目金额自动计算 50%/40%/10%，末笔补齐分币舍入差。三笔分别在签约当天、设备进场安装前、**调试完成后** `thirdPaymentDays` 个工作日内支付；该字段为 0–365 整数，默认 3，省略保留已有值。三笔时前两笔输入金额由服务器计算覆盖，`thirdPaymentAmount` 为只读结果。
+
+`crm_export_link(module="contracts", id, format="docx")` 导出可编辑竖版合同正文，不带报价/方案；PDF 的横竖版及附件规则保持原有设置。付款、保修、金额备注和按实际数量结算条款在 PDF 与 Word 中一致。内部备注不导出。
+
+报价 PDF 新增 `showSystemIntroduction`，默认 true；false 按章节省略清单前的封面、Apple Home/KNX、品牌、灯光介绍及服务流程，直接从费用总览开始。页数随配置变化，不按固定十页裁剪。与产品明细中的 `showProductIntroduction` 相互独立；Excel 不适用。合同报价附件通过 `attachmentQuoteExportOptions.showSystemIntroduction` 保存，须保存合同更新快照。详见报价指南与业务流程。

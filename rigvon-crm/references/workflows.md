@@ -245,3 +245,13 @@ Option 拖拽时保留原点位，副本预览随鼠标移动；松手仅新增�
 2. 保留完整合同内容，将 `form.payload.systemWarrantyYears` 设为用户要求的整数，例如 `8`。不得传字符串、空值或小数。不要用 additionalTerms 覆盖系统保修条款。
 3. 调用 crm_prepare_operation(operation="saveContractAction")，携带该合同最新 preconditions，再执行 operationId。存档合同须先按业务流程恢复草稿。
 4. 回读合同确认 systemWarrantyYears=8，通过 crm_export_link(module="contracts", id) 导出：单独竖版与附带方案/报价的横版均写“KNX 系统由乙方提供 8 年保修服务”。硬件保修范围和年限始终按对应厂家政策。已下载 PDF 不会被追溯修改，必须重新导出。
+
+## 合同付款期数与 Word（Skill 1.19.0 / MCP 1.14.0）
+
+1. `crm_get_record(module="contracts", id)` 取得当前字段与版本，完整保留其余合同字段。
+2. 在 `saveContractAction.form.payload` 中设置 `paymentInstallments:3`、`thirdPaymentDays:3`（可改 0–365 整数）。三笔金额自动按项目金额 50%/40%/10% 计算，时间依次为签约当天、设备进场安装前、调试完成后指定工作日内；不是交付后。新合同默认两笔；旧客户端省略新增字段保留原值。
+3. 携带最新 `preconditions`，prepare → execute → 回读 `paymentInstallments`、`thirdPaymentDays`、三笔金额。`thirdPaymentAmount` 只读；不要写入。三笔时手填 first/second 金额不采用。
+4. `crm_export_link` 输入 `{"module":"contracts","id":"实际合同ID","format":"docx"}`，直接下载返回 URL。只有合同支持 docx，内容为可编辑竖版合同正文；报价/方案附件只随 PDF 合并。
+5. PDF/Word 项目金额均注明“（具体明细见报价单）”，并写明配置可按项目需求调整、最终按实际使用产品数量结算。尾款期限、系统保修与企业资料均从已保存合同读取。
+
+合同附带报价如不需前面的系统介绍页，在完整 payload 中传 `attachmentQuoteExportOptions:{showSystemIntroduction:false}`，其他未传选项保留。保存时重建报价快照；导出合同不能用 URL 临时覆盖快照设置。文件导出后在 CRM 改动，须重新保存并重新下载。

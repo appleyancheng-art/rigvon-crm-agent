@@ -94,8 +94,14 @@ CRM 同步优化字段级 AI 来源、手机列表、深色显示与系统保存
 
 已有 Token 和连接继续使用。更新完整 Skill 并刷新工具；调用 `crm_capabilities` 核对 1.12.0，调用 `crm_describe_operation(saveContractAction)` 核对附件显示字段。详见报价指南及业务流程。
 
-## 当前版本 Skill v1.18.0 / MCP v1.13.0（2026-11-28）
+## Skill v1.18.0 / MCP v1.13.0（2026-11-28）
 
 合同新增可编辑的 KNX 系统保修年限 systemWarrantyYears，1–99 整年，默认 5 年；保存后竖版及横版 PDF 同步使用该值。硬件设备的保修期限及范围按对应生产厂商政策执行；不再承诺所有硬件免费更换固定年限。旧客户端省略该字段时保留已有值。
 
 更新 Skill 并刷新 MCP 工具；现有 Token 继续使用。调用 crm_capabilities 核对 1.13.0，再调用 crm_describe_operation(saveContractAction) 检查 systemWarrantyYears。
+
+## 当前版本 Skill v1.19.0 / MCP v1.14.0（2026-11-28）
+
+合同支持两笔或三笔付款，三笔固定 50%/40%/10%，尾款为调试完成后默认 3 个工作日内，可修改天数；PDF 与 Word 同步。新增可编辑合同 Word 正文导出，附件仍只随 PDF 合并。报价与合同报价附件新增显示系统介绍页开关，取消后从费用总览开始，按章节省略而非固定裁剪十页。
+
+复用已有连接和 Token。更新完整 Skill 并刷新 MCP 工具，用 `crm_capabilities` 核对 1.14.0；`crm_describe_operation(saveContractAction)` 核对付款字段和附件介绍页选项。Word 使用 `crm_export_link` 的 `format:"docx"`，仅合同支持。

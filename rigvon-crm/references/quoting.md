@@ -140,3 +140,13 @@ Excel 将 format 改为 excel。showOriginalPrice 包括产品标价、标价合
 showUnitPrice、showBrand、showProductIntroduction、showCustomer、showCompany 继续有效。未勾选的结构化价格不会藏在 Excel 单元格或公式里。内部核算独立包含成本、销售和毛利，只有用户明确需要内部文件时才启用，仍需成本权限。旧 onlyFinalTotal:true 展开为只显示折后总额，返回保存值时采用独立字段。
 
 备注中的自由文本不会自动改写，交付前阅读用户录入的条款。下载使用完整签名 URL；追加参数不能覆盖已签名选项。
+
+## 系统介绍页显示（Skill 1.19.0 / MCP 1.14.0）
+
+网页“导出客户版 PDF”对话框中的“显示系统介绍页”默认勾选。取消则省略报价清单前的封面、Apple Home/KNX、品牌、灯光与服务流程章节，从费用总览开始；房间清单、报价补充内容和已选金额信息完整保留。典型 KNX 报价为前 10 页，实际页数随配置变化，所以按章节控制。与“显示产品简介”（设备行内的用途文字）独立。Excel 无介绍页，此选项不适用。
+
+MCP 示例（其他显示字段按用户选择）：
+```json
+{"module":"quotes","id":"实际报价ID","format":"pdf","showSystemIntroduction":false,"showInternalCalculation":false}
+```
+省略 `showSystemIntroduction` 时默认 true。合同附带报价使用同名字段存于 `saveContractAction.form.payload.attachmentQuoteExportOptions`，保存后才更新附件；省略字段保留已存选择。导出签名 URL 已绑定显示参数，额外查询参数不能覆盖。
